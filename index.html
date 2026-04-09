@@ -1502,9 +1502,9 @@ function openPreview(blobs){
   const isMobile = 'ontouchstart' in window;
   document.getElementById('previewHint').style.display = isMobile ? '' : 'none';
 
-  // Title
+  // Title with count
   document.getElementById('previewTitle').textContent =
-    blobs.length > 1 ? `預覽 · 共 ${blobs.length} 張` : '預覽';
+    blobs.length > 1 ? `預覽 · ${blobs.length} 張（可上下捲動）` : '預覽';
 
   blobs.forEach((item, i) => {
     const url = URL.createObjectURL(item.blob);
@@ -1590,17 +1590,30 @@ async function exportAll(){
   const blobs = [];
   for(let vi=0; vi<VER_NAMES.length; vi++){
     const baseProgress = Math.round(vi/3*100);
-    const blob = await renderVersionToBlob(vi, (pct, msg)=>{
-      setExpProgress(Math.round(baseProgress + pct/3), msg);
-    });
-    if(!blob){ overlay.classList.remove('open'); showToast('導出失敗'); return; }
+    setExpProgress(baseProgress, `正在渲染版本 ${VER_NAMES[vi]}...`);
+    await new Promise(r=>setTimeout(r,60)); // let UI breathe on mobile
+
+    let blob = null;
+    try {
+      blob = await renderVersionToBlob(vi, (pct, msg)=>{
+        setExpProgress(Math.round(baseProgress + pct/3), msg);
+      });
+    } catch(e) {
+      console.error('Export error vi='+vi, e);
+    }
+
+    if(!blob){
+      overlay.classList.remove('open');
+      showToast(`版本 ${VER_NAMES[vi]} 渲染失敗，請試試「逐版本導出」`);
+      return;
+    }
     blobs.push({ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` });
-    await new Promise(r=>setTimeout(r,100));
+    // Give mobile GC time between large canvas operations
+    await new Promise(r=>setTimeout(r,300));
   }
 
-  setExpProgress(100,'全部完成！共 3 張');
+  setExpProgress(100,`完成！共 ${blobs.length} 張`);
   overlay.classList.remove('open');
-  // Show preview with all 3, swipe to switch
   openPreview(blobs);
 }
 
