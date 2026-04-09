@@ -324,6 +324,49 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
 .exp-bar{height:100%;background:var(--c-amber);border-radius:4px;transition:width .1s;width:0%}
 .exp-status{font-size:11px;color:var(--c-muted)}
 
+/* ── Preview overlay (long-press to save on mobile) ── */
+.preview-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.96);
+  z-index:300;flex-direction:column;
+  align-items:center;justify-content:center;gap:0;
+}
+.preview-overlay.open{display:flex}
+.preview-topbar{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;flex-shrink:0;
+}
+.preview-title{font-size:13px;font-weight:600;color:#fff;}
+.preview-hint{
+  font-size:11px;color:var(--c-amber);
+  padding:6px 14px;border-radius:20px;
+  border:1px solid #f5a62344;background:#f5a62310;
+  text-align:center;flex-shrink:0;margin-bottom:10px;
+}
+.preview-img-wrap{
+  flex:1;width:100%;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;padding:0 12px;min-height:0;
+}
+.preview-img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;border-radius:6px;
+  /* Enable long-press save on iOS */
+  -webkit-touch-callout:default;
+  user-select:none;
+}
+.preview-actions{
+  display:flex;gap:10px;padding:14px 16px;flex-shrink:0;width:100%;max-width:400px;
+}
+.preview-actions .btn{flex:1;justify-content:center;font-size:13px;padding:10px;}
+.preview-nav{
+  display:flex;gap:8px;padding:0 16px 12px;flex-shrink:0;
+}
+.preview-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#444;cursor:pointer;transition:background .15s;
+}
+.preview-dot.active{background:var(--c-amber);}
+
 @media(max-width:900px){
   .versions{grid-template-columns:1fr;overflow-y:auto;}
 }
@@ -539,6 +582,23 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
     <div class="exp-title" id="expTitle">正在生成 3600×3600 高解析度影像</div>
     <div class="exp-bar-wrap"><div class="exp-bar" id="expBar"></div></div>
     <div class="exp-status" id="expStatus">初始化...</div>
+  </div>
+</div>
+
+<!-- ── Preview Overlay ─────────────────────────────── -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-topbar">
+    <span class="preview-title" id="previewTitle">預覽</span>
+    <button class="modal-close" onclick="closePreview()">✕</button>
+  </div>
+  <div class="preview-hint" id="previewHint">📱 長按圖片即可儲存到相冊</div>
+  <div class="preview-img-wrap">
+    <img class="preview-img" id="previewImg" alt="預覽圖" draggable="false">
+  </div>
+  <div class="preview-nav" id="previewNav"></div>
+  <div class="preview-actions">
+    <button class="btn" onclick="closePreview()">關閉</button>
+    <button class="btn btn-amber" id="previewDownloadBtn" onclick="downloadCurrent()">↓ 下載到裝置</button>
   </div>
 </div>
 
@@ -1432,6 +1492,77 @@ function setExpProgress(pct, msg){
   document.getElementById('expStatus').textContent=msg;
 }
 
+// ── Preview overlay ───────────────────────────
+let previewBlobs = []; // [{blob, filename, label}]
+let previewIdx = 0;
+
+function openPreview(blobs){
+  previewBlobs = blobs;
+  previewIdx = 0;
+  showPreviewItem(0);
+  document.getElementById('previewOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // On desktop hide the hint, show only on touch device
+  const hint = document.getElementById('previewHint');
+  hint.style.display = ('ontouchstart' in window) ? '' : 'none';
+  // Nav dots (only if multiple)
+  const nav = document.getElementById('previewNav');
+  nav.innerHTML = '';
+  if(blobs.length > 1){
+    blobs.forEach((_,i)=>{
+      const dot = document.createElement('div');
+      dot.className = 'preview-dot' + (i===0?' active':'');
+      dot.onclick = ()=>showPreviewItem(i);
+      nav.appendChild(dot);
+    });
+  }
+}
+
+function showPreviewItem(i){
+  previewIdx = i;
+  const item = previewBlobs[i];
+  const url = URL.createObjectURL(item.blob);
+  const img = document.getElementById('previewImg');
+  // Revoke previous
+  if(img._prevUrl) URL.revokeObjectURL(img._prevUrl);
+  img._prevUrl = url;
+  img.src = url;
+  document.getElementById('previewTitle').textContent = item.label;
+  // Update dots
+  document.querySelectorAll('.preview-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+}
+
+function downloadCurrent(){
+  const item = previewBlobs[previewIdx];
+  downloadBlob(item.blob, item.filename);
+}
+
+function closePreview(){
+  document.getElementById('previewOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // Revoke all blob URLs
+  const img = document.getElementById('previewImg');
+  if(img._prevUrl){ URL.revokeObjectURL(img._prevUrl); img._prevUrl=null; }
+  previewBlobs = [];
+}
+
+// Swipe support for mobile preview
+(()=>{
+  let sx=0;
+  const el = ()=>document.getElementById('previewImg');
+  document.addEventListener('touchstart',e=>{
+    if(!document.getElementById('previewOverlay').classList.contains('open')) return;
+    sx=e.touches[0].clientX;
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!document.getElementById('previewOverlay').classList.contains('open')) return;
+    const dx=e.changedTouches[0].clientX-sx;
+    if(Math.abs(dx)<50) return;
+    const next = previewIdx + (dx<0?1:-1);
+    if(next>=0&&next<previewBlobs.length) showPreviewItem(next);
+  },{passive:true});
+})();
+
 async function exportVer(vi){
   if(!ST.images.length){ showToast('請先上傳照片'); return; }
   const overlay = document.getElementById('expOverlay');
@@ -1440,11 +1571,11 @@ async function exportVer(vi){
   setExpProgress(0,'準備中...');
   await new Promise(r=>setTimeout(r,40));
   const blob = await renderVersionToBlob(vi, setExpProgress);
-  if(!blob){ overlay.classList.remove('open'); showToast('導出失敗'); return; }
-  downloadBlob(blob, getFileName(vi));
+  overlay.classList.remove('open');
+  if(!blob){ showToast('導出失敗'); return; }
   setExpProgress(100,'完成！');
-  setTimeout(()=>overlay.classList.remove('open'), 600);
-  showToast('✓ 導出成功 · ' + getFileName(vi));
+  // Show preview overlay
+  openPreview([{ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` }]);
 }
 
 // ══════════════════════════════════════════════
@@ -1458,19 +1589,21 @@ async function exportAll(){
   setExpProgress(0,'準備導出三個版本...');
   await new Promise(r=>setTimeout(r,40));
 
+  const blobs = [];
   for(let vi=0; vi<VER_NAMES.length; vi++){
     const baseProgress = Math.round(vi/3*100);
     const blob = await renderVersionToBlob(vi, (pct, msg)=>{
       setExpProgress(Math.round(baseProgress + pct/3), msg);
     });
     if(!blob){ overlay.classList.remove('open'); showToast('導出失敗'); return; }
-    downloadBlob(blob, getFileName(vi));
-    await new Promise(r=>setTimeout(r,200)); // brief pause between downloads
+    blobs.push({ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` });
+    await new Promise(r=>setTimeout(r,100));
   }
 
   setExpProgress(100,'全部完成！共 3 張');
-  setTimeout(()=>overlay.classList.remove('open'), 800);
-  showToast('✓ 版本 A、B、C 已全部導出');
+  overlay.classList.remove('open');
+  // Show preview with all 3, swipe to switch
+  openPreview(blobs);
 }
 
 function applyColorFilterData(idata,bright,contrast,temp,sat){
