@@ -136,6 +136,22 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
 .upload-area strong{color:var(--c-amber)}
 .upload-area small{font-size:11px;color:#444}
 
+/* ── Mobile version tabs (hidden on desktop) ──── */
+.ver-tabs{
+  display:none; /* shown via media query */
+  flex-shrink:0;
+  background:var(--c-surface2);
+  border-bottom:1px solid var(--c-border);
+  padding:0 12px;
+  gap:0;
+}
+.ver-tab-btn{
+  flex:1;padding:10px 0;font-size:13px;font-weight:600;
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--c-muted);cursor:pointer;transition:all .15s;
+}
+.ver-tab-btn.active{color:var(--c-amber);border-bottom-color:var(--c-amber);}
+
 /* ── Versions grid ────────────────────────────────── */
 .versions{
   flex:1;display:grid;grid-template-columns:repeat(3,1fr);
@@ -308,8 +324,28 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
 .exp-bar{height:100%;background:var(--c-amber);border-radius:4px;transition:width .1s;width:0%}
 .exp-status{font-size:11px;color:var(--c-muted)}
 
-@media(max-width:900px){.versions{grid-template-columns:1fr}}
-@media(max-width:680px){.modal-body{flex-direction:column}.edit-side{width:100%;border-left:none;border-top:1px solid var(--c-border);max-height:240px}}
+@media(max-width:900px){
+  .versions{grid-template-columns:1fr;overflow-y:auto;}
+}
+
+@media(max-width:600px){
+  .topbar{height:auto;flex-wrap:wrap;gap:8px;padding:8px 12px;}
+  .topbar-controls{gap:8px;}
+  .topbar-right{gap:6px;flex-wrap:wrap;}
+  .brand-sub{display:none;}
+  .client-field input{width:130px;}
+  .global-bar{gap:8px;padding:6px 12px;flex-wrap:wrap;}
+  .gb-slider{width:60px!important;}
+  /* Show tab bar */
+  .ver-tabs{display:flex!important;}
+  /* Versions becomes single-panel */
+  .versions{grid-template-columns:1fr;overflow-y:auto;}
+  /* Modal full-screen */
+  .modal{width:100vw;height:100dvh;border-radius:0;min-height:0;}
+  .modal-body{flex-direction:column;}
+  .edit-side{width:100%;border-left:none;border-top:1px solid var(--c-border);max-height:45vh;overflow-y:auto;}
+  .edit-vp{min-height:220px;}
+}
 </style>
 </head>
 <body>
@@ -379,6 +415,13 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
     <span class="gc-val" id="gvSat">0</span>
   </div>
   <button class="gc-reset" onclick="resetGlobalColor()">↺ 重設</button>
+</div>
+
+<!-- ── Mobile Version Tabs (hidden on desktop) ──── -->
+<div class="ver-tabs" id="verTabs">
+  <button class="ver-tab-btn active" onclick="switchTab(0)">版本 A</button>
+  <button class="ver-tab-btn" onclick="switchTab(1)">版本 B</button>
+  <button class="ver-tab-btn" onclick="switchTab(2)">版本 C</button>
 </div>
 
 <!-- ── Main ───────────────────────────────────────── -->
@@ -645,6 +688,19 @@ function handleFiles(files){
 // ══════════════════════════════════════════════
 // Render
 // ══════════════════════════════════════════════
+let activeTab = 0;
+
+function switchTab(vi){
+  activeTab = vi;
+  document.querySelectorAll('.ver-tab-btn').forEach((btn,i)=>{
+    btn.classList.toggle('active', i===vi);
+  });
+  // Show only the active ver-panel on mobile
+  document.querySelectorAll('.ver-panel').forEach((panel,i)=>{
+    panel.style.display = (window.innerWidth<=600 && i!==vi) ? 'none' : '';
+  });
+}
+
 function renderVersions(){
   const main = document.getElementById('mainArea');
   main.innerHTML='';
@@ -652,7 +708,18 @@ function renderVersions(){
   wrap.className='versions';
   VER_NAMES.forEach((_,vi)=>wrap.appendChild(buildPanel(vi)));
   main.appendChild(wrap);
+  // Apply mobile tab visibility after render
+  if(window.innerWidth<=600) switchTab(activeTab);
 }
+
+window.addEventListener('resize',()=>{
+  const panels = document.querySelectorAll('.ver-panel');
+  if(window.innerWidth>600){
+    panels.forEach(p=>p.style.display='');
+  } else {
+    switchTab(activeTab);
+  }
+});
 
 function buildPanel(vi){
   const p=document.createElement('div'); p.className='ver-panel';
