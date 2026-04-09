@@ -1531,15 +1531,16 @@ function openPreview(blobs){
     const actions = document.createElement('div');
     actions.className = 'preview-item-actions';
 
+    const hasFinePointer = window.matchMedia('(pointer:fine)').matches;
+
     const dlBtn = document.createElement('button');
     dlBtn.className = 'btn btn-amber';
     dlBtn.textContent = `↓ 下載 ${item.label}`;
     dlBtn.onclick = () => downloadBlob(item.blob, item.filename);
-
-    actions.appendChild(dlBtn);
+    // Only show download button on desktop (mouse device)
+    if(hasFinePointer) actions.appendChild(dlBtn);
 
     if(i === blobs.length - 1){
-      // Last item: add close button too
       const closeBtn = document.createElement('button');
       closeBtn.className = 'btn';
       closeBtn.textContent = '關閉';
