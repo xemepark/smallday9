@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmallDay Grid Master Pro</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#0a0a0a;
+  --c-surface:#111111;
+  --c-surface2:#181818;
+  --c-border:#222222;
+  --c-border2:#2e2e2e;
+  --c-text:#e2e2e2;
+  --c-muted:#666;
+  --c-amber:#f5a623;
+  --c-amber-dim:#f5a62322;
+  --c-blue:#4a9eff;
+  --c-green:#3ecf8e;
+  --c-red:#ff4444;
+  --c-panel:210px;
+  font-family:'SF Pro Display',-apple-system,'Helvetica Neue',Arial,sans-serif;
+}
+body{background:var(--c-bg);color:var(--c-text);min-height:100vh;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+
+/* ── Layout ───────────────────────────────────────── */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── Topbar ───────────────────────────────────────── */
+.topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:10px 20px;
+  background:var(--c-surface);
+  border-bottom:1px solid var(--c-border);
+  flex-shrink:0;height:56px;
+}
+.brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.brand-mark{width:28px;height:28px;background:var(--c-amber);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;letter-spacing:-1px}
+.brand-name{font-size:14px;font-weight:600;letter-spacing:-0.3px;color:#fff}
+.brand-sub{font-size:10px;color:var(--c-muted);letter-spacing:1px;text-transform:uppercase}
+.topbar-sep{width:1px;height:28px;background:var(--c-border2);flex-shrink:0}
+.client-field{display:flex;flex-direction:column;gap:2px}
+.client-field label{font-size:9px;color:var(--c-muted);letter-spacing:1px;text-transform:uppercase}
+.client-field input{
+  background:var(--c-surface2);border:1px solid var(--c-border2);
+  border-radius:6px;padding:5px 10px;color:var(--c-text);
+  font-size:12px;width:180px;outline:none;transition:border-color .15s;
+}
+.client-field input:focus{border-color:var(--c-amber)}
+.topbar-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctrl-group{display:flex;align-items:center;gap:6px}
+.ctrl-lbl{font-size:10px;color:var(--c-muted);white-space:nowrap}
+.range-wrap{display:flex;align-items:center;gap:6px}
+.range-val{font-size:11px;color:var(--c-amber);min-width:30px;font-variant-numeric:tabular-nums}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  height:3px;background:#333;border-radius:2px;outline:none;width:90px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:12px;height:12px;
+  border-radius:50%;background:var(--c-amber);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--c-amber);cursor:pointer;border:none}
+input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);border-radius:5px;cursor:pointer;padding:1px;background:none}
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:7px;
+  border:1px solid var(--c-border2);background:var(--c-surface2);
+  color:var(--c-text);font-size:11px;font-weight:500;
+  transition:all .15s;white-space:nowrap;
+}
+.btn:hover{background:#222;border-color:#3a3a3a}
+.btn-amber{background:var(--c-amber);border-color:var(--c-amber);color:#000;font-weight:700}
+.btn-amber:hover{background:#fdb93a;border-color:#fdb93a}
+.btn-red{border-color:#ff444444;color:var(--c-red)}
+.btn-red:hover{background:#1a0000}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* ── Global color bar ─────────────────────────── */
+.global-bar{
+  display:flex;align-items:center;gap:14px;
+  padding:7px 20px;
+  background:#0f0f0f;
+  border-bottom:1px solid var(--c-border);
+  flex-shrink:0;flex-wrap:wrap;
+}
+.global-bar-title{
+  font-size:9px;color:var(--c-muted);letter-spacing:1px;
+  text-transform:uppercase;white-space:nowrap;flex-shrink:0;
+}
+.global-bar .ctrl-sep{height:18px}
+.gc-val{
+  font-size:10px;color:var(--c-amber);
+  min-width:28px;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.gc-reset{
+  font-size:10px;color:var(--c-muted);
+  background:none;border:1px solid var(--c-border2);
+  border-radius:5px;padding:3px 8px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;
+}
+.gc-reset:hover{color:var(--c-amber);border-color:var(--c-amber);}
+/* Double-click-to-reset labels */
+.reset-lbl{
+  cursor:pointer;user-select:none;
+  transition:color .15s;
+}
+.reset-lbl:hover{color:var(--c-amber)!important;}
+/* themed slider tracks */
+.gb-slider{width:80px!important}
+.bright-trk{background:linear-gradient(to right,#222,#fff)!important}
+.contrast-trk{background:linear-gradient(to right,#666,#000 40%,#fff)!important}
+.temp-trk{background:linear-gradient(to right,#6ab0ff,#fff 50%,#ffb347)!important}
+.sat-trk{background:linear-gradient(to right,#888,#fff 50%,#ff6b6b)!important}
+
+/* ── Upload zone ──────────────────────────────────── */
+.upload-area{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;
+  border:2px dashed var(--c-border2);
+  border-radius:12px;margin:20px;
+  cursor:pointer;transition:all .2s;background:var(--c-surface);
+}
+.upload-area:hover,.upload-area.drag{border-color:var(--c-amber);background:#0f0d00}
+.upload-area p{color:var(--c-muted);font-size:14px}
+.upload-area strong{color:var(--c-amber)}
+.upload-area small{font-size:11px;color:#444}
+
+/* ── Versions grid ────────────────────────────────── */
+.versions{
+  flex:1;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;padding:12px;overflow:hidden;
+}
+.ver-panel{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:12px;display:flex;flex-direction:column;overflow:hidden;
+}
+.ver-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;background:var(--c-surface2);border-bottom:1px solid var(--c-border);
+  flex-shrink:0;
+}
+.ver-badge{
+  padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:1.5px;
+}
+.ba{background:#f5a62322;color:var(--c-amber);border:1px solid #f5a62344}
+.bb{background:#4a9eff22;color:var(--c-blue);border:1px solid #4a9eff44}
+.bc{background:#3ecf8e22;color:var(--c-green);border:1px solid #3ecf8e44}
+.ver-actions{display:flex;gap:4px}
+.icon-btn{
+  width:26px;height:26px;border-radius:5px;
+  border:1px solid var(--c-border2);background:transparent;
+  color:var(--c-muted);font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.icon-btn:hover{background:var(--c-surface2);color:var(--c-text)}
+.grid-wrap{flex:1;padding:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.photo-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  width:100%;aspect-ratio:1;
+}
+.ver-foot{padding:8px 10px;border-top:1px solid var(--c-border);flex-shrink:0}
+.ver-foot .btn{width:100%;justify-content:center;font-size:11px}
+
+/* ── Grid cell ────────────────────────────────────── */
+.cell{
+  position:relative;aspect-ratio:1;overflow:hidden;
+  cursor:default;
+}
+.cell.drag-over{box-shadow:inset 0 0 0 2px var(--c-amber)}
+.cell.dragging{opacity:.3}
+.cell.warn{box-shadow:inset 0 0 0 2px var(--c-red)}
+.cell-img-wrap{width:100%;height:100%;overflow:hidden;position:relative;background:#0d0d0d}
+.cell-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.cell-img-raw{position:absolute;top:50%;left:50%;transform-origin:center;max-width:none;user-select:none;pointer-events:none;opacity:0}
+.cell-overlay{
+  position:absolute;inset:0;display:flex;
+  align-items:flex-start;justify-content:flex-end;
+  padding:3px;pointer-events:none;
+}
+.cell-tools{pointer-events:all;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.cell:hover .cell-tools{opacity:1}
+.c-btn{
+  width:20px;height:20px;border-radius:3px;border:none;
+  background:rgba(0,0,0,.78);color:#ccc;
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  transition:all .12s;
+}
+.c-btn:hover{background:var(--c-amber);color:#000}
+.pin-mark{
+  position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:var(--c-amber);
+  display:flex;align-items:center;justify-content:center;font-size:8px;
+  pointer-events:none;
+}
+.dbl-hint{
+  position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.7);color:#999;font-size:9px;
+  padding:2px 6px;border-radius:3px;white-space:nowrap;
+  opacity:0;transition:opacity .15s;pointer-events:none;
+}
+.cell:hover .dbl-hint{opacity:1}
+.empty-cell{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:#0d0d0d;font-size:20px;color:#1e1e1e;font-weight:900;
+}
+
+/* ── Edit Modal ───────────────────────────────────── */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);
+  z-index:100;align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--c-surface);border:1px solid var(--c-border2);
+  border-radius:16px;width:min(98vw,1020px);height:min(96vh,720px);min-height:580px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.9);
+}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-bottom:1px solid var(--c-border);
+  background:var(--c-surface2);flex-shrink:0;
+}
+.modal-head-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--c-border2);background:transparent;color:var(--c-muted);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-close:hover{background:#222;color:#fff}
+.modal-body{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* viewport */
+.edit-vp{
+  flex:1;position:relative;background:#080808;
+  overflow:hidden;cursor:grab;user-select:none;min-width:0;
+}
+.edit-vp.pan{cursor:grabbing}
+.vp-img{position:absolute;max-width:none;user-select:none;pointer-events:none;transform-origin:center}
+.vp-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.vp-lbl{
+  position:absolute;font-size:10px;color:var(--c-amber);
+  background:rgba(0,0,0,.7);padding:2px 6px;border-radius:3px;
+  pointer-events:none;white-space:nowrap;
+}
+
+/* side panel */
+.edit-side{
+  width:240px;flex-shrink:0;background:var(--c-surface2);
+  border-left:1px solid var(--c-border);
+  display:flex;flex-direction:column;overflow-y:auto;min-height:0;
+}
+.side-section{padding:14px 16px;border-bottom:1px solid var(--c-border)}
+.side-sec-title{font-size:9px;color:var(--c-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.side-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.side-row label{font-size:10px;color:var(--c-muted);min-width:40px}
+.side-row input[type=range]{flex:1;width:auto}
+.side-val{font-size:10px;color:var(--c-amber);min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+.side-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
+.side-btn{padding:5px 8px;border-radius:6px;border:1px solid var(--c-border2);background:var(--c-surface);color:var(--c-text);font-size:10px;transition:all .12s}
+.side-btn:hover{background:#222;border-color:#3a3a3a}
+.side-stat{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.side-stat span:first-child{color:var(--c-muted)}
+.side-stat span:last-child{color:var(--c-amber);font-variant-numeric:tabular-nums}
+
+/* color sliders themed */
+.bright-slider::-webkit-slider-thumb{background:#fff}
+.bright-slider{background:linear-gradient(to right,#000,#fff)!important}
+.contrast-slider::-webkit-slider-thumb{background:#aaa}
+.contrast-slider{background:linear-gradient(to right,#888,#000 40%,#fff)!important}
+.temp-slider::-webkit-slider-thumb{background:#e8c97a}
+.temp-slider{background:linear-gradient(to right,#6ab0ff,#fff 50%,#ffb347)!important}
+.sat-slider::-webkit-slider-thumb{background:#ff6b6b}
+.sat-slider{background:linear-gradient(to right,#888,#fff 50%,#ff6b6b)!important}
+
+.modal-foot{
+  display:flex;gap:8px;padding:10px 18px;
+  border-top:1px solid var(--c-border);background:var(--c-surface2);flex-shrink:0;
+}
+.modal-foot .btn{flex:1;justify-content:center}
+
+/* ── Toast ────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--c-surface2);border:1px solid #f5a62333;color:var(--c-amber);
+  padding:8px 18px;border-radius:8px;font-size:12px;
+  z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;
+}
+.toast.show{opacity:1}
+
+/* ── Export progress ──────────────────────────────── */
+.exp-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+.exp-overlay.open{display:flex}
+.exp-box{background:var(--c-surface2);border:1px solid var(--c-border2);border-radius:12px;padding:28px 36px;text-align:center;min-width:260px}
+.exp-title{font-size:14px;font-weight:600;margin-bottom:12px}
+.exp-bar-wrap{background:#222;border-radius:4px;height:4px;overflow:hidden;margin-bottom:8px}
+.exp-bar{height:100%;background:var(--c-amber);border-radius:4px;transition:width .1s;width:0%}
+.exp-status{font-size:11px;color:var(--c-muted)}
+
+@media(max-width:900px){.versions{grid-template-columns:1fr}}
+@media(max-width:680px){.modal-body{flex-direction:column}.edit-side{width:100%;border-left:none;border-top:1px solid var(--c-border);max-height:240px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Topbar ──────────────────────────────────────── -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">小</div>
+    <div><div class="brand-name">SmallDay</div><div class="brand-sub">Grid Master Pro</div></div>
+  </div>
+  <div class="topbar-sep"></div>
+  <div class="client-field">
+    <label>客戶姓名</label>
+    <input type="text" id="clientName" placeholder="輸入姓名（選填）">
+  </div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-controls">
+    <div class="ctrl-group">
+      <span class="ctrl-lbl">間距</span>
+      <div class="range-wrap">
+        <input type="range" id="gapSlider" min="0" max="100" value="1" oninput="updateGap(this.value)">
+        <span class="range-val" id="gapVal">1px</span>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-lbl">底色</span>
+      <input type="color" id="bgColor" value="#ffffff" onchange="updateBg(this.value)">
+    </div>
+    <button class="btn" onclick="randomAll()">⟳ 全部版本換位</button>
+  </div>
+  <div class="topbar-right">
+    <button class="btn" onclick="triggerImportGrid()" style="border-color:#a78bfa66;color:#a78bfa;" title="上傳一張已排好的九宮格圖，自動切割成9張並載入">⬆ 匯入九宮格圖</button>
+    <input type="file" id="importGridInput" accept="image/*" style="display:none" onchange="handleImportGrid(this.files)">
+    <button class="btn btn-amber" onclick="triggerUpload()">＋ 上傳照片</button>
+    <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
+    <input type="file" id="replaceInput" accept="image/*" style="display:none" onchange="handleReplaceFile(this.files)">
+    <button class="btn" onclick="exportAll()" style="border-color:#f5a62366;color:var(--c-amber)">↓ 導出全部 A·B·C</button>
+    <button class="btn btn-red" onclick="clearAll()">✕ 清除</button>
+  </div>
+</div>
+
+<!-- ── Global Color Bar ────────────────────────── -->
+<div class="global-bar" id="globalBar">
+  <span class="global-bar-title">全域調色</span>
+  <div class="ctrl-group">
+    <span class="ctrl-lbl reset-lbl" ondblclick="resetGlobalOne('bright')" title="雙擊歸零">亮度</span>
+    <input type="range" class="gb-slider bright-trk" id="gbBright" min="-100" max="100" value="0" step="1" oninput="onGlobalColor('bright',this.value)">
+    <span class="gc-val" id="gvBright">0</span>
+  </div>
+  <div class="ctrl-sep"></div>
+  <div class="ctrl-group">
+    <span class="ctrl-lbl reset-lbl" ondblclick="resetGlobalOne('contrast')" title="雙擊歸零">對比</span>
+    <input type="range" class="gb-slider contrast-trk" id="gbContrast" min="-100" max="100" value="0" step="1" oninput="onGlobalColor('contrast',this.value)">
+    <span class="gc-val" id="gvContrast">0</span>
+  </div>
+  <div class="ctrl-sep"></div>
+  <div class="ctrl-group">
+    <span class="ctrl-lbl reset-lbl" ondblclick="resetGlobalOne('temp')" title="雙擊歸零">白平衡</span>
+    <input type="range" class="gb-slider temp-trk" id="gbTemp" min="-100" max="100" value="0" step="1" oninput="onGlobalColor('temp',this.value)">
+    <span class="gc-val" id="gvTemp">0</span>
+  </div>
+  <div class="ctrl-sep"></div>
+  <div class="ctrl-group">
+    <span class="ctrl-lbl reset-lbl" ondblclick="resetGlobalOne('sat')" title="雙擊歸零">飽和度</span>
+    <input type="range" class="gb-slider sat-trk" id="gbSat" min="-100" max="100" value="0" step="1" oninput="onGlobalColor('sat',this.value)">
+    <span class="gc-val" id="gvSat">0</span>
+  </div>
+  <button class="gc-reset" onclick="resetGlobalColor()">↺ 重設</button>
+</div>
+
+<!-- ── Main ───────────────────────────────────────── -->
+<div class="main" id="mainArea">
+  <div class="upload-area" id="uploadArea"
+    ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)"
+    onclick="triggerUpload()">
+    <p>拖放 <strong>最多 9 張照片</strong> 到此處，或點擊選擇</p>
+    <small>雙擊任一格 → 進入專業編輯與調色模式 · 導出 3600×3600px 高畫質 JPEG</small>
+  </div>
+</div>
+
+<!-- ── Edit Modal ──────────────────────────────────── -->
+<div class="modal-bg" id="modalBg" onclick="onBgClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">
+        <span id="mBadge" class="ver-badge ba">版本 A</span>
+        <span id="mLabel">編輯照片</span>
+      </div>
+      <button class="modal-close" onclick="closeEdit(false)">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- viewport -->
+      <div class="edit-vp" id="editVp">
+        <img class="vp-img" id="vpImg" alt="" draggable="false">
+        <svg class="vp-svg" id="vpSvg"></svg>
+        <div class="vp-lbl" id="vpLbl">裁切預覽框</div>
+      </div>
+      <!-- side panel -->
+      <div class="edit-side">
+
+        <div class="side-section">
+          <div class="side-sec-title">幾何調整</div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneGeo('scale')" title="雙擊恢復預設">縮放</label>
+            <input type="range" id="esScale" min="5" max="600" value="100" step="1" oninput="onScale(this.value)">
+            <span class="side-val" id="evScale">100%</span>
+          </div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneGeo('x')" title="雙擊恢復預設">水平</label>
+            <input type="range" id="esX" min="-800" max="800" value="0" step="1" oninput="onX(this.value)">
+            <span class="side-val" id="evX">0</span>
+          </div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneGeo('y')" title="雙擊恢復預設">垂直</label>
+            <input type="range" id="esY" min="-800" max="800" value="0" step="1" oninput="onY(this.value)">
+            <span class="side-val" id="evY">0</span>
+          </div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneGeo('rot')" title="雙擊恢復預設">旋轉</label>
+            <input type="range" id="esRot" min="-180" max="180" value="0" step="1" oninput="onRot(this.value)">
+            <span class="side-val" id="evRot">0°</span>
+          </div>
+          <div class="side-btn-grid">
+            <button class="side-btn" onclick="rotStep(-90)">↺ −90°</button>
+            <button class="side-btn" onclick="rotStep(90)">↻ +90°</button>
+          </div>
+          <div class="side-btn-grid" style="margin-top:6px">
+            <button class="side-btn" onclick="fitCover()">填滿裁切</button>
+            <button class="side-btn" onclick="fitContain()">完整顯示</button>
+            <button class="side-btn" onclick="fitWidth()">寬度填滿</button>
+            <button class="side-btn" onclick="fitHeight()">高度填滿</button>
+          </div>
+        </div>
+
+        <div class="side-section">
+          <div class="side-sec-title">調色 (非破壞性)</div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneColor('bright')" title="雙擊歸零">亮度</label>
+            <input type="range" class="bright-slider" id="eBright" min="-100" max="100" value="0" step="1" oninput="onColor('bright',this.value)">
+            <span class="side-val" id="evBright">0</span>
+          </div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneColor('contrast')" title="雙擊歸零">對比</label>
+            <input type="range" class="contrast-slider" id="eContrast" min="-100" max="100" value="0" step="1" oninput="onColor('contrast',this.value)">
+            <span class="side-val" id="evContrast">0</span>
+          </div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneColor('temp')" title="雙擊歸零">色溫</label>
+            <input type="range" class="temp-slider" id="eTemp" min="-100" max="100" value="0" step="1" oninput="onColor('temp',this.value)">
+            <span class="side-val" id="evTemp">0</span>
+          </div>
+          <div class="side-row">
+            <label class="reset-lbl" ondblclick="resetOneColor('sat')" title="雙擊歸零">飽和</label>
+            <input type="range" class="sat-slider" id="eSat" min="-100" max="100" value="0" step="1" oninput="onColor('sat',this.value)">
+            <span class="side-val" id="evSat">0</span>
+          </div>
+          <button class="side-btn" style="width:100%;margin-top:4px" onclick="resetColor()">重設調色</button>
+        </div>
+
+        <div class="side-section">
+          <div class="side-sec-title">影像資訊</div>
+          <div class="side-stat"><span>原始尺寸</span><span id="infoSize">—</span></div>
+          <div class="side-stat"><span>縮放</span><span id="infoScale">—</span></div>
+          <div class="side-stat"><span>旋轉</span><span id="infoRot">—</span></div>
+          <div class="side-stat"><span>亮度/對比/色溫/飽和</span><span id="infoColor">—</span></div>
+        </div>
+
+        <div class="side-section" style="margin-top:auto;border-bottom:none">
+          <button class="side-btn btn-red" style="width:100%;border-color:#ff444433;color:var(--c-red)" onclick="editReset()">↺ 全部重設</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeEdit(false)">取消</button>
+      <button class="btn btn-amber" onclick="closeEdit(true)">✓ 套用變更</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Export Overlay ──────────────────────────────── -->
+<div class="exp-overlay" id="expOverlay">
+  <div class="exp-box">
+    <div class="exp-title" id="expTitle">正在生成 3600×3600 高解析度影像</div>
+    <div class="exp-bar-wrap"><div class="exp-bar" id="expBar"></div></div>
+    <div class="exp-status" id="expStatus">初始化...</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════
+// Constants
+// ══════════════════════════════════════════════
+const VER_NAMES = ['A','B','C'];
+const VER_BADGES = ['ba','bb','bc'];
+const STORAGE_KEY = 'sdgm_pro_v6';
+const EXPORT_SIZE = 3600;
+
+// ══════════════════════════════════════════════
+// State
+// ══════════════════════════════════════════════
+function mkTr(){ return {scale:1,x:0,y:0,rot:0,fitted:false,bright:0,contrast:0,temp:0,sat:0}; }
+function mk3x9(fn){ return Array.from({length:3},()=>Array.from({length:9},fn)); }
+
+let ST = {
+  clientName:'',
+  gap:1,
+  bgColor:'#ffffff',
+  globalColor:{ bright:0, contrast:0, temp:0, sat:0 },
+  images:[],
+  versions: VER_NAMES.map(()=>({
+    order:[0,1,2,3,4,5,6,7,8],
+    pins:[false,false,false,false,false,false,false,false,false]
+  })),
+  transforms: mk3x9(mkTr)
+};
+
+let dragSrc = null;
+let ED = null; // editor context
+let vpPanning = false;
+let vpPanStart = {};
+
+// ══════════════════════════════════════════════
+// Persistence
+// ══════════════════════════════════════════════
+function stateSave(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(ST)); }catch(e){}
+}
+function stateLoad(){
+  try{
+    const r = localStorage.getItem(STORAGE_KEY);
+    if(!r) return;
+    const p = JSON.parse(r);
+    ST.clientName = p.clientName||'';
+    ST.gap = p.gap??1;
+    ST.bgColor = p.bgColor||'#ffffff';
+    ST.versions = p.versions||ST.versions;
+    ST.transforms = p.transforms||ST.transforms;
+    ST.images = p.images||[];
+    ST.globalColor = p.globalColor||{bright:0,contrast:0,temp:0,sat:0};
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════
+function init(){
+  stateLoad();
+  document.getElementById('clientName').value = ST.clientName;
+  document.getElementById('gapSlider').value = ST.gap;
+  document.getElementById('gapVal').textContent = ST.gap+'px';
+  document.getElementById('bgColor').value = ST.bgColor;
+  document.getElementById('clientName').addEventListener('input',e=>{ST.clientName=e.target.value;stateSave();});
+  // Restore global color bar
+  const gc = ST.globalColor;
+  document.getElementById('gbBright').value   = gc.bright;   document.getElementById('gvBright').textContent   = gc.bright;
+  document.getElementById('gbContrast').value = gc.contrast; document.getElementById('gvContrast').textContent = gc.contrast;
+  document.getElementById('gbTemp').value     = gc.temp;     document.getElementById('gvTemp').textContent     = gc.temp;
+  document.getElementById('gbSat').value      = gc.sat||0;   document.getElementById('gvSat').textContent      = gc.sat||0;
+  if(ST.images.length) renderVersions();
+}
+
+// ══════════════════════════════════════════════
+// Controls
+// ══════════════════════════════════════════════
+function updateGap(v){
+  ST.gap=+v;
+  document.getElementById('gapVal').textContent=v+'px';
+  VER_NAMES.forEach((_,vi)=>{
+    const g=document.getElementById('grid-'+vi);
+    if(g){g.style.gap=v+'px';g.style.padding=v+'px';}
+  });
+  stateSave();
+}
+function updateBg(v){
+  ST.bgColor=v;
+  VER_NAMES.forEach((_,vi)=>{
+    const g=document.getElementById('grid-'+vi);
+    if(g) g.style.background=v;
+  });
+  stateSave();
+}
+
+// ── Global color adjustments ──────────────────
+function onGlobalColor(key, v){
+  ST.globalColor[key] = +v;
+  document.getElementById('gv'+cap(key)).textContent = v;
+  // Re-render all cell canvases to reflect new global color
+  VER_NAMES.forEach((_,vi)=>{
+    for(let ci=0;ci<9;ci++) renderCellCanvas(vi,ci);
+  });
+  stateSave();
+}
+function resetGlobalColor(){
+  ST.globalColor = {bright:0,contrast:0,temp:0,sat:0};
+  ['Bright','Contrast','Temp','Sat'].forEach(k=>{
+    const id='gb'+k; const el=document.getElementById(id);
+    if(el){ el.value=0; document.getElementById('gv'+k).textContent=0; }
+  });
+  VER_NAMES.forEach((_,vi)=>{
+    for(let ci=0;ci<9;ci++) renderCellCanvas(vi,ci);
+  });
+  stateSave();
+}
+
+// ══════════════════════════════════════════════
+// Upload
+// ══════════════════════════════════════════════
+function triggerUpload(){ document.getElementById('fileInput').click(); }
+function onDragOver(e){ e.preventDefault(); document.getElementById('uploadArea').classList.add('drag'); }
+function onDragLeave(){ document.getElementById('uploadArea').classList.remove('drag'); }
+function onDrop(e){ e.preventDefault(); document.getElementById('uploadArea').classList.remove('drag'); handleFiles(e.dataTransfer.files); }
+function handleFiles(files){
+  const arr = Array.from(files).filter(f=>f.type.startsWith('image/')).slice(0,9);
+  if(!arr.length) return;
+  ST.images=[];
+  ST.transforms=mk3x9(mkTr);
+  ST.versions.forEach(v=>{v.order=arr.map((_,i)=>i);v.pins=arr.map(()=>false);});
+  let done=0;
+  arr.forEach((file,i)=>{
+    const r=new FileReader();
+    r.onload=ev=>{
+      ST.images[i]=ev.target.result;
+      if(++done===arr.length){renderVersions();stateSave();}
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+// ══════════════════════════════════════════════
+// Render
+// ══════════════════════════════════════════════
+function renderVersions(){
+  const main = document.getElementById('mainArea');
+  main.innerHTML='';
+  const wrap = document.createElement('div');
+  wrap.className='versions';
+  VER_NAMES.forEach((_,vi)=>wrap.appendChild(buildPanel(vi)));
+  main.appendChild(wrap);
+}
+
+function buildPanel(vi){
+  const p=document.createElement('div'); p.className='ver-panel';
+  p.innerHTML=`
+    <div class="ver-head">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="ver-badge ${VER_BADGES[vi]}">版本 ${VER_NAMES[vi]}</span>
+        <span style="font-size:11px;color:var(--c-muted)">九宮格排版</span>
+      </div>
+      <div class="ver-actions">
+        <button onclick="randomVer(${vi})" title="此版本隨機換位（不影響其他版本）"
+          style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px solid #f5a62388;background:#f5a62318;color:#f5a623;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:0.3px;"
+          onmouseover="this.style.background='#f5a62333'" onmouseout="this.style.background='#f5a62318'">⟳ 換位</button>
+        <button class="icon-btn" title="導出" onclick="exportVer(${vi})">↓</button>
+      </div>
+    </div>
+    <div class="grid-wrap">
+      <div class="photo-grid" id="grid-${vi}"
+        style="gap:${ST.gap}px;padding:${ST.gap}px;background:${ST.bgColor};">
+      </div>
+    </div>
+    <div class="ver-foot">
+      <button class="btn btn-amber" onclick="exportVer(${vi})">導出 3600px JPG</button>
+    </div>`;
+  setTimeout(()=>buildGrid(vi),0);
+  return p;
+}
+
+function buildGrid(vi){
+  const grid=document.getElementById('grid-'+vi);
+  if(!grid) return;
+  grid.innerHTML='';
+  const ver=ST.versions[vi];
+  for(let ci=0;ci<9;ci++){
+    const cell=document.createElement('div');
+    cell.className='cell'; cell.id=`c-${vi}-${ci}`;
+    const idx=ver.order[ci]??-1;
+    const src=(idx>=0&&ST.images[idx])?ST.images[idx]:null;
+    const tr=ST.transforms[vi][ci];
+    const pinned=ver.pins[ci];
+
+    if(src){
+      const wrap=document.createElement('div'); wrap.className='cell-img-wrap';
+      // Use canvas for color adjustments preview
+      const canvas=document.createElement('canvas'); canvas.className='cell-canvas'; canvas.id=`cv-${vi}-${ci}`;
+      const imgRaw=document.createElement('img'); imgRaw.className='cell-img-raw'; imgRaw.id=`ir-${vi}-${ci}`;
+      imgRaw.draggable=false; imgRaw.src=src;
+      imgRaw.onload=()=>{
+        if(!tr.fitted){
+          // tr.scale is a USER multiplier (1.0 = cover fit). Store base separately.
+          tr.scale=1.0;
+          tr.fitted=true;
+        }
+        // Use ResizeObserver to render once the canvas has actual dimensions
+        const ro=new ResizeObserver(()=>{
+          if(wrap.offsetWidth>0){ro.disconnect();renderCellCanvas(vi,ci);}
+        });
+        ro.observe(wrap);
+        if(wrap.offsetWidth>0){ro.disconnect();renderCellCanvas(vi,ci);}
+        requestAnimationFrame(()=>checkWarn(cell,canvas,tr));
+      };
+      wrap.appendChild(canvas); wrap.appendChild(imgRaw); cell.appendChild(wrap);
+
+      // Double-click
+      let dclkT=null;
+      cell.addEventListener('click',e=>{
+        if(e.target.closest('.c-btn')) return;
+        if(dclkT){clearTimeout(dclkT);dclkT=null;openEdit(vi,ci);}
+        else{dclkT=setTimeout(()=>{dclkT=null;},300);}
+      });
+
+      const hint=document.createElement('div'); hint.className='dbl-hint'; hint.textContent='雙擊編輯';
+      cell.appendChild(hint);
+    }else{
+      const emp=document.createElement('div'); emp.className='empty-cell'; emp.textContent=String(ci+1);
+      cell.appendChild(emp);
+    }
+
+    // Tools
+    const ov=document.createElement('div'); ov.className='cell-overlay';
+    const tools=document.createElement('div'); tools.className='cell-tools';
+    if(src){
+      tools.appendChild(mkCBtn('✎','雙擊或點此編輯',e=>{e.stopPropagation();openEdit(vi,ci);}));
+      tools.appendChild(mkCBtn('⇄','替換照片',e=>{e.stopPropagation();triggerReplace(vi,ci);}));
+    }
+    tools.appendChild(mkCBtn('↻','旋轉',e=>{e.stopPropagation();rotCell(vi,ci);}));
+    const pb=mkCBtn(pinned?'📌':'○',pinned?'取消釘選':'釘選',e=>{e.stopPropagation();togglePin(vi,ci);});
+    tools.appendChild(pb);
+    ov.appendChild(tools); cell.appendChild(ov);
+    if(pinned){const pm=document.createElement('div');pm.className='pin-mark';pm.textContent='📌';cell.appendChild(pm);}
+
+    setupCellDrag(cell,vi,ci);
+    grid.appendChild(cell);
+  }
+}
+
+function mkCBtn(txt,title,fn){
+  const b=document.createElement('button');
+  b.className='c-btn';b.textContent=txt;b.title=title;b.onclick=fn;return b;
+}
+
+// ══════════════════════════════════════════════
+// Canvas cell rendering (with color adjustments)
+// ══════════════════════════════════════════════
+function renderCellCanvas(vi,ci){
+  const canvas=document.getElementById(`cv-${vi}-${ci}`);
+  const imgRaw=document.getElementById(`ir-${vi}-${ci}`);
+  if(!canvas||!imgRaw||!imgRaw.naturalWidth) return;
+
+  const cell=document.getElementById(`c-${vi}-${ci}`);
+  const wrap=cell&&cell.querySelector('.cell-img-wrap');
+  if(!wrap) return;
+
+  const W=wrap.offsetWidth||180; const H=wrap.offsetHeight||180;
+  if(!W||!H) return;
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const tr=ST.transforms[vi][ci];
+  const S=Math.min(W,H); // treat cell as square for clamp (it is 1:1)
+  clampTransform(tr, S, imgRaw.naturalWidth, imgRaw.naturalHeight);
+
+  // bs = base cover-fit scale (fills the cell). tr.scale is user multiplier on top.
+  const bs=Math.max(W/imgRaw.naturalWidth,H/imgRaw.naturalHeight);
+  const sc=bs*(tr.scale||1);
+
+  ctx.save();
+  ctx.translate(W/2,H/2);
+  ctx.rotate((tr.rot||0)*Math.PI/180);
+  ctx.scale(sc,sc);
+  ctx.translate(tr.x||0,tr.y||0);
+  ctx.drawImage(imgRaw,-imgRaw.naturalWidth/2,-imgRaw.naturalHeight/2);
+  ctx.restore();
+
+  const gc = ST.globalColor;
+  applyColorFilter(ctx,W,H,
+    (tr.bright||0)+(gc.bright||0),
+    (tr.contrast||0)+(gc.contrast||0),
+    (tr.temp||0)+(gc.temp||0),
+    (tr.sat||0)+(gc.sat||0)
+  );
+  // With clamp enforced, warn border should never appear — but keep check for safety
+  requestAnimationFrame(()=>checkWarnCanvas(cell,canvas,tr,W,H));
+}
+
+function applyColorFilter(ctx,W,H,bright,contrast,temp,sat){
+  if(!bright&&!contrast&&!temp&&!sat) return;
+  const idata=ctx.getImageData(0,0,W,H);
+  applyColorFilterData(idata,bright,contrast,temp,sat);
+  ctx.putImageData(idata,0,0);
+}
+
+function checkWarnCanvas(cell,canvas,tr,W,H){
+  // Check if rendered image fills entire cell (no black edges)
+  const ctx=canvas.getContext('2d');
+  const corners=[
+    [0,0],[W-1,0],[0,H-1],[W-1,H-1],
+    [Math.round(W/2),0],[0,Math.round(H/2)],[W-1,Math.round(H/2)],[Math.round(W/2),H-1]
+  ];
+  let hasBlack=false;
+  for(const[cx,cy]of corners){
+    const px=ctx.getImageData(cx,cy,1,1).data;
+    if(px[3]===0||(px[0]<5&&px[1]<5&&px[2]<5&&px[3]>0)){hasBlack=true;break;}
+  }
+  cell.classList.toggle('warn',hasBlack);
+}
+
+function checkWarn(cell,canvas,tr){
+  setTimeout(()=>{
+    const W=canvas.width,H=canvas.height;
+    if(!W||!H) return;
+    checkWarnCanvas(cell,canvas,tr,W,H);
+  },80);
+}
+
+// ══════════════════════════════════════════════
+// Edit Modal
+// ══════════════════════════════════════════════
+function openEdit(vi,ci){
+  const ver=ST.versions[vi];
+  const idx=ver.order[ci]??-1;
+  if(idx<0||!ST.images[idx]) return;
+
+  ED={vi,ci,idx,
+    orig:{...ST.transforms[vi][ci]},
+    wt:{...ST.transforms[vi][ci]}
+  };
+
+  document.getElementById('mBadge').className=`ver-badge ${VER_BADGES[vi]}`;
+  document.getElementById('mBadge').textContent=`版本 ${VER_NAMES[vi]}`;
+  document.getElementById('mLabel').textContent=`第 ${ci+1} 格 · 編輯照片`;
+
+  const vpImg=document.getElementById('vpImg');
+  vpImg.onload=()=>{
+    document.getElementById('infoSize').textContent=`${vpImg.naturalWidth}×${vpImg.naturalHeight}`;
+    layoutVp();
+    syncEditUI();
+  };
+  vpImg.src=ST.images[idx];
+
+  document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow='hidden';
+
+  const vp=document.getElementById('editVp');
+  vp.onmousedown=vpMouseDown;
+  vp.onwheel=vpWheel;
+}
+
+function closeEdit(apply){
+  if(apply===true&&ED){
+    const editedImgIdx = ED.idx; // the image index being edited
+    const newTr = {...ED.wt};
+
+    // Apply to ALL versions that contain this same image
+    VER_NAMES.forEach((_,vi)=>{
+      const ver = ST.versions[vi];
+      ver.order.forEach((imgIdx, ci)=>{
+        if(imgIdx === editedImgIdx){
+          ST.transforms[vi][ci] = {...newTr};
+          renderCellCanvas(vi, ci);
+          const cell = document.getElementById(`c-${vi}-${ci}`);
+          const canvas = document.getElementById(`cv-${vi}-${ci}`);
+          if(cell&&canvas) requestAnimationFrame(()=>checkWarnCanvas(cell,canvas,newTr,canvas.width,canvas.height));
+        }
+      });
+    });
+
+    stateSave();
+    showToast('✓ 已套用並同步至所有版本');
+  }
+  document.getElementById('modalBg').classList.remove('open');
+  document.body.style.overflow='';
+  ED=null;
+}
+
+function onBgClick(e){ if(e.target===document.getElementById('modalBg')) closeEdit(false); }
+
+// ── Viewport layout ──────────────────────────
+function layoutVp(){
+  if(!ED) return;
+  const vp=document.getElementById('editVp');
+  const W=vp.offsetWidth,H=vp.offsetHeight;
+  if(!W||!H) return;
+  const S=Math.round(Math.min(W,H)*0.76);
+  const X=Math.round((W-S)/2),Y=Math.round((H-S)/2);
+  ED._cx=X;ED._cy=Y;ED._cs=S;
+  const vpImg=document.getElementById('vpImg');
+  vpImg.style.left=(X+S/2)+'px';
+  vpImg.style.top=(Y+S/2)+'px';
+  drawCropSvg(W,H,X,Y,S);
+  const lbl=document.getElementById('vpLbl');
+  lbl.style.left=(X+S/2-28)+'px';
+  lbl.style.top=(Y-22)+'px';
+}
+
+function drawCropSvg(W,H,X,Y,S){
+  const svg=document.getElementById('vpSvg');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const c=18,t=2.5;
+  svg.innerHTML=`
+    <defs><mask id="cm"><rect width="${W}" height="${H}" fill="white"/><rect x="${X}" y="${Y}" width="${S}" height="${S}" fill="black"/></mask></defs>
+    <rect width="${W}" height="${H}" fill="rgba(0,0,0,0.62)" mask="url(#cm)"/>
+    <line x1="${X+S/3}" y1="${Y}" x2="${X+S/3}" y2="${Y+S}" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    <line x1="${X+2*S/3}" y1="${Y}" x2="${X+2*S/3}" y2="${Y+S}" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    <line x1="${X}" y1="${Y+S/3}" x2="${X+S}" y2="${Y+S/3}" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    <line x1="${X}" y1="${Y+2*S/3}" x2="${X+S}" y2="${Y+2*S/3}" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    <rect x="${X}" y="${Y}" width="${S}" height="${S}" fill="none" stroke="#f5a623" stroke-width="1.5"/>
+    <rect x="${X}" y="${Y}" width="${c}" height="${t}" fill="#f5a623"/>
+    <rect x="${X}" y="${Y}" width="${t}" height="${c}" fill="#f5a623"/>
+    <rect x="${X+S-c}" y="${Y}" width="${c}" height="${t}" fill="#f5a623"/>
+    <rect x="${X+S-t}" y="${Y}" width="${t}" height="${c}" fill="#f5a623"/>
+    <rect x="${X}" y="${Y+S-t}" width="${c}" height="${t}" fill="#f5a623"/>
+    <rect x="${X}" y="${Y+S-c}" width="${t}" height="${c}" fill="#f5a623"/>
+    <rect x="${X+S-c}" y="${Y+S-t}" width="${c}" height="${t}" fill="#f5a623"/>
+    <rect x="${X+S-t}" y="${Y+S-c}" width="${t}" height="${c}" fill="#f5a623"/>`;
+}
+
+function syncEditUI(){
+  if(!ED) return;
+  const tr=ED.wt;
+  // clamp is applied inside applyVpTransform, but we need natural size first
+  const img=document.getElementById('vpImg');
+  const S=ED._cs||300;
+  if(img.naturalWidth) clampTransform(tr, S, img.naturalWidth, img.naturalHeight);
+
+  const pct=Math.round((tr.scale||1)*100);
+  document.getElementById('esScale').value=Math.min(600,Math.max(5,pct));
+  document.getElementById('evScale').textContent=pct+'%';
+  document.getElementById('esX').value=Math.round(tr.x||0);
+  document.getElementById('evX').textContent=Math.round(tr.x||0);
+  document.getElementById('esY').value=Math.round(tr.y||0);
+  document.getElementById('evY').textContent=Math.round(tr.y||0);
+  document.getElementById('esRot').value=tr.rot||0;
+  document.getElementById('evRot').textContent=Math.round(tr.rot||0)+'°';
+  document.getElementById('eBright').value=tr.bright||0;
+  document.getElementById('evBright').textContent=tr.bright||0;
+  document.getElementById('eContrast').value=tr.contrast||0;
+  document.getElementById('evContrast').textContent=tr.contrast||0;
+  document.getElementById('eTemp').value=tr.temp||0;
+  document.getElementById('evTemp').textContent=tr.temp||0;
+  document.getElementById('eSat').value=tr.sat||0;
+  document.getElementById('evSat').textContent=tr.sat||0;
+  document.getElementById('infoScale').textContent=pct+'%';
+  document.getElementById('infoRot').textContent=Math.round(tr.rot||0)+'°';
+  document.getElementById('infoColor').textContent=`${tr.bright||0}/${tr.contrast||0}/${tr.temp||0}/${tr.sat||0}`;
+  applyVpTransform();
+  applyVpColor();
+}
+
+// clampTransform: enforce the rotated image ALWAYS covers every pixel of the S×S crop box.
+// Strategy: transform the 4 crop-box corners into image-local space (un-rotate),
+// then ensure they all fall within the image half-extents. Exact for any rotation.
+function clampTransform(tr, S, nw, nh){
+  const rot  = (tr.rot || 0) * Math.PI / 180;
+  const cosR = Math.cos(rot);
+  const sinR = Math.sin(rot);
+
+  // Base cover scale (fills crop box with no rotation, no pan)
+  const bs = Math.max(S / nw, S / nh);
+
+  // The 4 corners of the crop box in world space (relative to image centre)
+  const hs = S / 2;
+  const corners = [[ hs, hs],[-hs, hs],[ hs,-hs],[-hs,-hs]];
+
+  // Step 1: find minimum scale multiplier so all corners can be inside the image
+  // At scale m, image half-extents in local space are nw/2 and nh/2.
+  // Corner [cx,cy] in image-local space (zero pan): lx = (cx·cosR + cy·sinR)/(bs·m)
+  // Need |lx| <= nw/2 => m >= |cx·cosR + cy·sinR| / (bs · nw/2)
+  // Similarly for ly.
+  let minM = tr.scale || 1;
+  for(const [cx, cy] of corners){
+    const lxNum = Math.abs(cx * cosR + cy * sinR);
+    const lyNum = Math.abs(-cx * sinR + cy * cosR);
+    const mFromX = lxNum / (bs * nw / 2);
+    const mFromY = lyNum / (bs * nh / 2);
+    minM = Math.max(minM, mFromX, mFromY);
+  }
+  if((tr.scale || 1) < minM) tr.scale = minM;
+
+  const sc = bs * tr.scale;
+
+  // Step 2: clamp pan (tr.x, tr.y in image-local coords) so all corners stay inside image.
+  // image-local x of corner = (cx·cosR + cy·sinR)/sc - tr.x  must be in [-nw/2, nw/2]
+  // => tr.x in [lx - nw/2, lx + nw/2] for each corner → intersect all ranges.
+  let minPx = -Infinity, maxPx = Infinity;
+  let minPy = -Infinity, maxPy = Infinity;
+  for(const [cx, cy] of corners){
+    const lx = ( cx * cosR + cy * sinR) / sc;
+    const ly = (-cx * sinR + cy * cosR) / sc;
+    minPx = Math.max(minPx, lx - nw / 2);
+    maxPx = Math.min(maxPx, lx + nw / 2);
+    minPy = Math.max(minPy, ly - nh / 2);
+    maxPy = Math.min(maxPy, ly + nh / 2);
+  }
+  tr.x = Math.max(minPx, Math.min(maxPx, tr.x || 0));
+  tr.y = Math.max(minPy, Math.min(maxPy, tr.y || 0));
+}
+
+function applyVpTransform(){
+  if(!ED) return;
+  const tr=ED.wt;
+  const img=document.getElementById('vpImg');
+  const S=ED._cs||300;
+  const nw=img.naturalWidth||1, nh=img.naturalHeight||1;
+  clampTransform(tr, S, nw, nh);
+  const bs=Math.max(S/nw, S/nh);
+  const sc=bs*(tr.scale||1);
+  img.style.transform=`translate(-50%,-50%) rotate(${tr.rot}deg) scale(${sc}) translate(${tr.x}px,${tr.y}px)`;
+  document.getElementById('vpLbl').style.color='var(--c-amber)';
+}
+
+// Color adjustments in viewport (CSS filter for preview, pixel-level for export)
+function applyVpColor(){
+  if(!ED) return;
+  const tr=ED.wt;
+  const gc=ST.globalColor;
+  const bright  = (tr.bright||0)  + (gc.bright||0);
+  const contrast= (tr.contrast||0)+ (gc.contrast||0);
+  const temp    = (tr.temp||0)    + (gc.temp||0);
+  const sat     = (tr.sat||0)     + (gc.sat||0);
+  const br=Math.max(0.01, 1+(bright/100));
+  const ct=Math.max(0.01, 1+(contrast/100));
+  const sv=Math.max(0, 1+(sat/100));
+  const img=document.getElementById('vpImg');
+  let filter=`brightness(${br}) contrast(${ct}) saturate(${sv})`;
+  if(temp!==0){
+    if(temp>0) filter+=` sepia(${Math.min(1,temp/200)}) saturate(${sv*(1+temp/300)})`;
+    else filter+=` hue-rotate(${-temp*0.3}deg)`;
+  }
+  img.style.filter=filter;
+}
+
+// ── Viewport pan/zoom ────────────────────────
+function getRenderedScale(){
+  if(!ED) return 1;
+  const img=document.getElementById('vpImg');
+  const S=ED._cs||300;
+  const bs=Math.max(S/(img.naturalWidth||1), S/(img.naturalHeight||1));
+  return bs*(ED.wt.scale||1);
+}
+
+function vpMouseDown(e){
+  if(e.button!==0) return;
+  vpPanStart={mx:e.clientX,my:e.clientY,ox:ED.wt.x,oy:ED.wt.y};
+  document.getElementById('editVp').classList.add('pan');
+  const mv=ev=>{
+    if(!ED) return;
+    const sc=getRenderedScale();
+    ED.wt.x=vpPanStart.ox+(ev.clientX-vpPanStart.mx)/sc;
+    ED.wt.y=vpPanStart.oy+(ev.clientY-vpPanStart.my)/sc;
+    syncEditUI(); // clamp is called inside applyVpTransform via syncEditUI
+  };
+  const up=()=>{
+    document.getElementById('editVp').classList.remove('pan');
+    document.removeEventListener('mousemove',mv);
+    document.removeEventListener('mouseup',up);
+  };
+  document.addEventListener('mousemove',mv);
+  document.addEventListener('mouseup',up);
+}
+function vpWheel(e){
+  e.preventDefault();if(!ED) return;
+  ED.wt.scale=Math.max(0.05,Math.min(20,ED.wt.scale*(1-e.deltaY*0.001)));
+  syncEditUI();
+}
+
+// ── Sliders ──────────────────────────────────
+function onScale(v){if(!ED) return;ED.wt.scale=+v/100;syncEditUI();}
+function onX(v){if(!ED) return;ED.wt.x=+v;syncEditUI();}
+function onY(v){if(!ED) return;ED.wt.y=+v;syncEditUI();}
+function onRot(v){if(!ED) return;ED.wt.rot=+v;syncEditUI();}
+function rotStep(d){
+  if(!ED) return;
+  ED.wt.rot=((ED.wt.rot+d)%360+360)%360;
+  if(ED.wt.rot>180) ED.wt.rot-=360;
+  syncEditUI();
+}
+function onColor(key,v){
+  if(!ED) return;
+  ED.wt[key]=+v;
+  document.getElementById('ev'+cap(key)).textContent=v;
+  document.getElementById('info'+cap(key))||null;
+  document.getElementById('infoColor').textContent=`${ED.wt.bright||0}/${ED.wt.contrast||0}/${ED.wt.temp||0}/${ED.wt.sat||0}`;
+  applyVpColor();
+}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+// Reset a single global color param on double-click
+function resetGlobalOne(key){
+  ST.globalColor[key] = 0;
+  const K = cap(key);
+  document.getElementById('gb'+K).value = 0;
+  document.getElementById('gv'+K).textContent = 0;
+  VER_NAMES.forEach((_,vi)=>{ for(let ci=0;ci<9;ci++) renderCellCanvas(vi,ci); });
+  stateSave();
+}
+
+// Reset a single per-photo color param on double-click
+function resetOneColor(key){
+  if(!ED) return;
+  ED.wt[key] = 0;
+  const K = cap(key);
+  document.getElementById('e'+K).value = 0;
+  document.getElementById('ev'+K).textContent = 0;
+  document.getElementById('infoColor').textContent=`${ED.wt.bright||0}/${ED.wt.contrast||0}/${ED.wt.temp||0}/${ED.wt.sat||0}`;
+  applyVpColor();
+}
+
+// Reset a single geometry param on double-click
+function resetOneGeo(key){
+  if(!ED) return;
+  if(key==='scale') ED.wt.scale=1.0;
+  else if(key==='x') ED.wt.x=0;
+  else if(key==='y') ED.wt.y=0;
+  else if(key==='rot') ED.wt.rot=0;
+  syncEditUI();
+}
+
+function resetColor(){
+  if(!ED) return;
+  ED.wt.bright=0;ED.wt.contrast=0;ED.wt.temp=0;ED.wt.sat=0;
+  syncEditUI();
+}
+
+// ── Fit helpers ──────────────────────────────
+// tr.scale is a USER multiplier: 1.0 = "cover fit" (fills cell/crop box exactly)
+// base cover scale = max(S/w, S/h). All fit values expressed relative to that.
+function getNat(){const i=document.getElementById('vpImg');return{w:i.naturalWidth||1,h:i.naturalHeight||1};}
+function fitCover(){ if(!ED) return;ED.wt.scale=1.0;ED.wt.x=0;ED.wt.y=0;syncEditUI();}
+function fitContain(){
+  if(!ED) return;
+  const{w,h}=getNat(),S=ED._cs||300;
+  const coverBase=Math.max(S/w,S/h);
+  const containAbs=Math.min(S/w,S/h);
+  ED.wt.scale=containAbs/coverBase; // multiplier < 1 to shrink to contain
+  ED.wt.x=0;ED.wt.y=0;syncEditUI();
+}
+function fitWidth(){
+  if(!ED) return;
+  const{w,h}=getNat(),S=ED._cs||300;
+  const coverBase=Math.max(S/w,S/h);
+  ED.wt.scale=(S/w)/coverBase;ED.wt.x=0;ED.wt.y=0;syncEditUI();
+}
+function fitHeight(){
+  if(!ED) return;
+  const{w,h}=getNat(),S=ED._cs||300;
+  const coverBase=Math.max(S/w,S/h);
+  ED.wt.scale=(S/h)/coverBase;ED.wt.x=0;ED.wt.y=0;syncEditUI();
+}
+function editReset(){
+  if(!ED) return;
+  ED.wt={scale:1.0,x:0,y:0,rot:0,fitted:true,bright:0,contrast:0,temp:0};
+  syncEditUI();
+}
+
+window.addEventListener('resize',()=>{if(ED) layoutVp();});
+
+// ══════════════════════════════════════════════
+// Cell operations
+// ══════════════════════════════════════════════
+function rotCell(vi,ci){
+  ST.transforms[vi][ci].rot=(ST.transforms[vi][ci].rot+90)%360;
+  renderCellCanvas(vi,ci);
+  stateSave();
+}
+function togglePin(vi,ci){
+  ST.versions[vi].pins[ci]=!ST.versions[vi].pins[ci];
+  stateSave();buildGrid(vi);
+}
+
+function setupCellDrag(cell,vi,ci){
+  cell.setAttribute('draggable','true');
+  cell.addEventListener('dragstart',e=>{
+    dragSrc={vi,ci};cell.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',`${vi}-${ci}`);
+  });
+  cell.addEventListener('dragend',()=>cell.classList.remove('dragging'));
+  cell.addEventListener('dragover',e=>{
+    e.preventDefault();if(dragSrc&&dragSrc.vi===vi) cell.classList.add('drag-over');
+  });
+  cell.addEventListener('dragleave',()=>cell.classList.remove('drag-over'));
+  cell.addEventListener('drop',e=>{
+    e.preventDefault();cell.classList.remove('drag-over');
+    if(!dragSrc||dragSrc.vi!==vi||dragSrc.ci===ci) return;
+    const ver=ST.versions[vi];
+    if(ver.pins[dragSrc.ci]||ver.pins[ci]){showToast('釘選格子無法交換');return;}
+    [ver.order[dragSrc.ci],ver.order[ci]]=[ver.order[ci],ver.order[dragSrc.ci]];
+    [ST.transforms[vi][dragSrc.ci],ST.transforms[vi][ci]]=[ST.transforms[vi][ci],ST.transforms[vi][dragSrc.ci]];
+    stateSave();buildGrid(vi);dragSrc=null;
+  });
+}
+
+// ══════════════════════════════════════════════
+// Randomize / Clear
+// ══════════════════════════════════════════════
+function randomVer(vi){
+  const ver = ST.versions[vi];
+  // Collect free (unpinned) cell indices
+  const fi = ver.order.map((_,i) => ver.pins[i] ? null : i).filter(i => i !== null);
+  if(fi.length < 2){ showToast('沒有足夠未釘選的格子可以換位'); return; }
+
+  // Shuffle the free slots - swap BOTH order and transforms together
+  // so crop/edit settings always follow the image
+  for(let i = fi.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    const ci1 = fi[i], ci2 = fi[j];
+    // Swap order
+    [ver.order[ci1], ver.order[ci2]] = [ver.order[ci2], ver.order[ci1]];
+    // Swap transforms so crop settings follow the image
+    [ST.transforms[vi][ci1], ST.transforms[vi][ci2]] =
+      [ST.transforms[vi][ci2], ST.transforms[vi][ci1]];
+  }
+
+  stateSave();
+  buildGrid(vi);
+}
+function randomAll(){ VER_NAMES.forEach((_,vi) => randomVer(vi)); }
+function clearAll(){
+  if(!confirm('確定清除所有照片與排版設定？')) return;
+  ST.images=[];ST.transforms=mk3x9(mkTr);
+  ST.versions=VER_NAMES.map(()=>({order:[0,1,2,3,4,5,6,7,8],pins:[false,false,false,false,false,false,false,false,false]}));
+  stateSave();
+  const main=document.getElementById('mainArea');
+  main.innerHTML='';
+  const ua=document.createElement('div');
+  ua.className='upload-area';ua.id='uploadArea';
+  ua.setAttribute('ondragover',"onDragOver(event)");ua.setAttribute('ondragleave',"onDragLeave()");ua.setAttribute('ondrop',"onDrop(event)");
+  ua.onclick=triggerUpload;
+  ua.innerHTML='<p>拖放 <strong>最多 9 張照片</strong> 到此處，或點擊選擇</p><small>雙擊任一格 → 進入專業編輯與調色模式 · 導出 3600×3600px 高畫質 JPEG</small>';
+  main.appendChild(ua);
+}
+
+// ══════════════════════════════════════════════
+// Replace photo (syncs across all versions)
+// ══════════════════════════════════════════════
+let replacingCtx = null;
+
+function triggerReplace(vi, ci){
+  const ver = ST.versions[vi];
+  const imgIdx = ver.order[ci] ?? -1;
+  if(imgIdx < 0){ showToast('此格沒有照片'); return; }
+  replacingCtx = { vi, ci, imgIdx };
+  const inp = document.getElementById('replaceInput');
+  inp.value = '';
+  inp.click();
+}
+
+function handleReplaceFile(files){
+  if(!files||!files.length||!replacingCtx) return;
+  const { imgIdx } = replacingCtx;
+  const file = files[0];
+  if(!file.type.startsWith('image/')){ showToast('請選擇圖片檔案'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    ST.images[imgIdx] = ev.target.result;
+    // Reset transforms + rebuild all cells across all versions using this imgIdx
+    const rebuilt = new Set();
+    VER_NAMES.forEach((_,vi2) => {
+      let needRebuild = false;
+      ST.versions[vi2].order.forEach((idx, ci2) => {
+        if(idx === imgIdx){
+          ST.transforms[vi2][ci2] = mkTr();
+          needRebuild = true;
+        }
+      });
+      if(needRebuild && !rebuilt.has(vi2)){
+        buildGrid(vi2);
+        rebuilt.add(vi2);
+      }
+    });
+    stateSave();
+    showToast('✓ 照片已替換並同步至所有版本');
+    replacingCtx = null;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════
+// Shared export core (returns a Promise<Blob>)
+// ══════════════════════════════════════════════
+async function renderVersionToBlob(vi, onProgress){
+  const SIZE = EXPORT_SIZE;
+  const gp = Math.round((ST.gap / 300) * SIZE);
+  const cp = Math.round((SIZE - gp * 4) / 3);
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = SIZE;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = ST.bgColor;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+  const ver = ST.versions[vi];
+  const loadImg = src => new Promise((res,rej)=>{
+    const img = new Image(); img.crossOrigin='anonymous';
+    img.onload=()=>res(img); img.onerror=rej; img.src=src;
+  });
+  for(let ci = 0; ci < 9; ci++){
+    onProgress && onProgress(Math.round((ci/9)*80), `版本 ${VER_NAMES[vi]} · 第 ${ci+1}/9 格`);
+    await new Promise(r=>setTimeout(r,8));
+    const idx = ver.order[ci];
+    if(idx===undefined||!ST.images[idx]) continue;
+    const col=ci%3, row=Math.floor(ci/3);
+    const x=gp+col*(cp+gp), y=gp+row*(cp+gp);
+    let img; try{ img=await loadImg(ST.images[idx]); }catch{ continue; }
+    const tr = ST.transforms[vi][ci];
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x,y,cp,cp); ctx.clip();
+    ctx.translate(x+cp/2, y+cp/2);
+    ctx.rotate((tr.rot||0)*Math.PI/180);
+    const bs = Math.max(cp/img.naturalWidth, cp/img.naturalHeight);
+    ctx.scale(bs*(tr.scale||1), bs*(tr.scale||1));
+    ctx.translate(tr.x||0, tr.y||0);
+    ctx.drawImage(img, -img.naturalWidth/2, -img.naturalHeight/2);
+    ctx.restore();
+    const gc = ST.globalColor;
+    const totalB = (tr.bright||0)+(gc.bright||0);
+    const totalC = (tr.contrast||0)+(gc.contrast||0);
+    const totalT = (tr.temp||0)+(gc.temp||0);
+    const totalS = (tr.sat||0)+(gc.sat||0);
+    if(totalB||totalC||totalT||totalS){
+      onProgress && onProgress(Math.round((ci/9)*80)+5, `版本 ${VER_NAMES[vi]} · 調色第 ${ci+1}/9 格`);
+      await new Promise(r=>setTimeout(r,4));
+      const cellData = ctx.getImageData(x,y,cp,cp);
+      applyColorFilterData(cellData, totalB, totalC, totalT, totalS);
+      ctx.putImageData(cellData, x, y);
+    }
+  }
+  onProgress && onProgress(90, `版本 ${VER_NAMES[vi]} · 壓縮中...`);
+  await new Promise(r=>setTimeout(r,10));
+  return new Promise(res => cv.toBlob(res, 'image/jpeg', 0.95));
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════
+// Export single version
+// ══════════════════════════════════════════════
+function getFileName(vi){
+  const n=ST.clientName.trim()||'Smallday';
+  const now=new Date(), p=x=>String(x).padStart(2,'0');
+  return `${n}-${now.getFullYear()}${p(now.getMonth()+1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}-${VER_NAMES[vi]}.jpg`;
+}
+
+function setExpProgress(pct, msg){
+  document.getElementById('expBar').style.width=pct+'%';
+  document.getElementById('expStatus').textContent=msg;
+}
+
+async function exportVer(vi){
+  if(!ST.images.length){ showToast('請先上傳照片'); return; }
+  const overlay = document.getElementById('expOverlay');
+  document.getElementById('expTitle').textContent = `導出版本 ${VER_NAMES[vi]} · 3600×3600px`;
+  overlay.classList.add('open');
+  setExpProgress(0,'準備中...');
+  await new Promise(r=>setTimeout(r,40));
+  const blob = await renderVersionToBlob(vi, setExpProgress);
+  if(!blob){ overlay.classList.remove('open'); showToast('導出失敗'); return; }
+  downloadBlob(blob, getFileName(vi));
+  setExpProgress(100,'完成！');
+  setTimeout(()=>overlay.classList.remove('open'), 600);
+  showToast('✓ 導出成功 · ' + getFileName(vi));
+}
+
+// ══════════════════════════════════════════════
+// Export all three versions
+// ══════════════════════════════════════════════
+async function exportAll(){
+  if(!ST.images.length){ showToast('請先上傳照片'); return; }
+  const overlay = document.getElementById('expOverlay');
+  document.getElementById('expTitle').textContent = '導出全部版本 A · B · C · 3600×3600px';
+  overlay.classList.add('open');
+  setExpProgress(0,'準備導出三個版本...');
+  await new Promise(r=>setTimeout(r,40));
+
+  for(let vi=0; vi<VER_NAMES.length; vi++){
+    const baseProgress = Math.round(vi/3*100);
+    const blob = await renderVersionToBlob(vi, (pct, msg)=>{
+      setExpProgress(Math.round(baseProgress + pct/3), msg);
+    });
+    if(!blob){ overlay.classList.remove('open'); showToast('導出失敗'); return; }
+    downloadBlob(blob, getFileName(vi));
+    await new Promise(r=>setTimeout(r,200)); // brief pause between downloads
+  }
+
+  setExpProgress(100,'全部完成！共 3 張');
+  setTimeout(()=>overlay.classList.remove('open'), 800);
+  showToast('✓ 版本 A、B、C 已全部導出');
+}
+
+function applyColorFilterData(idata,bright,contrast,temp,sat){
+  const d=idata.data;
+  const bv=(bright||0)*2.55;
+  const cv=(contrast||0)/100;
+  const cfactor=(259*(cv*100+255))/(255*(259-cv*100));
+  const tw=temp||0;
+  const sv=1+(sat||0)/100; // sat multiplier: <1 desaturate, >1 saturate
+
+  for(let i=0;i<d.length;i+=4){
+    let r=d[i],g=d[i+1],b=d[i+2];
+    // Brightness
+    r+=bv; g+=bv; b+=bv;
+    // Contrast
+    r=cfactor*(r-128)+128;
+    g=cfactor*(g-128)+128;
+    b=cfactor*(b-128)+128;
+    // Temperature: warm→+R−B, cool→−R+B
+    r+=tw*0.8; b-=tw*0.8; g+=tw*0.1;
+    // Saturation: shift each channel away from/toward luminance
+    const lum=0.299*r+0.587*g+0.114*b;
+    r=lum+(r-lum)*sv;
+    g=lum+(g-lum)*sv;
+    b=lum+(b-lum)*sv;
+    d[i]  =Math.max(0,Math.min(255,r));
+    d[i+1]=Math.max(0,Math.min(255,g));
+    d[i+2]=Math.max(0,Math.min(255,b));
+  }
+}
+
+// ══════════════════════════════════════════════
+// Import Grid Image — auto-detect gaps & slice
+// ══════════════════════════════════════════════
+function triggerImportGrid(){
+  const inp = document.getElementById('importGridInput');
+  inp.value = '';
+  inp.click();
+}
+
+function handleImportGrid(files){
+  if(!files||!files.length) return;
+  const file = files[0];
+  if(!file.type.startsWith('image/')){ showToast('請選擇圖片檔案'); return; }
+
+  showToast('正在分析九宮格圖...');
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const slices = sliceGridImage(img);
+        if(!slices){ showToast('❌ 無法偵測九宮格間距，請確認圖片格式'); return; }
+
+        // Replace all images and reset everything
+        ST.images = slices;
+        ST.transforms = mk3x9(mkTr);
+        ST.versions = VER_NAMES.map(()=>({
+          order:[0,1,2,3,4,5,6,7,8],
+          pins:[false,false,false,false,false,false,false,false,false]
+        }));
+        stateSave();
+        renderVersions();
+        showToast('✓ 已自動切割並載入 9 張照片');
+      } catch(e) {
+        showToast('❌ 切割失敗：' + e.message);
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Core: load image onto canvas, detect gap rows/cols, extract 9 cells as dataURLs
+function sliceGridImage(img){
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const data = ctx.getImageData(0, 0, W, H).data;
+
+  const px = (x, y) => {
+    const i = (y * W + x) * 4;
+    return [data[i], data[i+1], data[i+2]];
+  };
+
+  const TOL = 20; // colour tolerance for "uniform" check
+
+  // Check if a full horizontal row is uniform colour
+  const rowUniform = (y) => {
+    const [r0,g0,b0] = px(0, y);
+    for(let x=1; x<W; x++){
+      const [r,g,b] = px(x, y);
+      if(Math.abs(r-r0)>TOL||Math.abs(g-g0)>TOL||Math.abs(b-b0)>TOL) return false;
+    }
+    return true;
+  };
+
+  // Check if a full vertical column is uniform colour
+  const colUniform = (x) => {
+    const [r0,g0,b0] = px(x, 0);
+    for(let y=1; y<H; y++){
+      const [r,g,b] = px(x, y);
+      if(Math.abs(r-r0)>TOL||Math.abs(g-g0)>TOL||Math.abs(b-b0)>TOL) return false;
+    }
+    return true;
+  };
+
+  // Find all contiguous uniform bands, return [{start,end}]
+  const findGapBands = (size, checkFn) => {
+    const bands = [];
+    let inGap = false, start = 0;
+    for(let i = 0; i < size; i++){
+      if(checkFn(i)){
+        if(!inGap){ inGap = true; start = i; }
+      } else {
+        if(inGap){ inGap = false; bands.push({start, end: i-1}); }
+      }
+    }
+    if(inGap) bands.push({start, end: size-1});
+    return bands;
+  };
+
+  const hBands = findGapBands(H, rowUniform);
+  const vBands = findGapBands(W, colUniform);
+
+  // Separate outer edge bands from inner divider bands.
+  // Outer bands: touch the very first or last pixel.
+  // Inner bands: the 2 dividers that split the image into 3 columns/rows.
+  const outerH = { top: null, bottom: null };
+  const outerV = { left: null, right: null };
+  const innerH = [];
+  const innerV = [];
+
+  for(const b of hBands){
+    if(b.start === 0)       outerH.top    = b;
+    else if(b.end === H-1)  outerH.bottom = b;
+    else                    innerH.push(b);
+  }
+  for(const b of vBands){
+    if(b.start === 0)       outerV.left  = b;
+    else if(b.end === W-1)  outerV.right = b;
+    else                    innerV.push(b);
+  }
+
+  // Need exactly 2 inner dividers in each direction.
+  // If more, pick the 2 closest to 1/3 and 2/3 of the *inner* content area.
+  const contentTop    = outerH.top    ? outerH.top.end   + 1 : 0;
+  const contentBottom = outerH.bottom ? outerH.bottom.start - 1 : H - 1;
+  const contentLeft   = outerV.left   ? outerV.left.end  + 1 : 0;
+  const contentRight  = outerV.right  ? outerV.right.start - 1 : W - 1;
+  const contentH = contentBottom - contentTop + 1;
+  const contentW = contentRight  - contentLeft  + 1;
+
+  const pick2 = (bands, contentStart, contentSize) => {
+    if(bands.length === 2) return bands;
+    if(bands.length < 2)   return null;
+    const t1 = contentStart + contentSize / 3;
+    const t2 = contentStart + 2 * contentSize / 3;
+    const score = b => Math.min(
+      Math.abs((b.start+b.end)/2 - t1),
+      Math.abs((b.start+b.end)/2 - t2)
+    );
+    return [...bands].sort((a,b)=>score(a)-score(b)).slice(0,2)
+                     .sort((a,b)=>a.start-b.start);
+  };
+
+  const hGaps = pick2(innerH, contentTop, contentH);
+  const vGaps = pick2(innerV, contentLeft, contentW);
+  if(!hGaps || !vGaps) return null;
+
+  // Build the 3 row & col bounds — fully excluding outer padding AND inner dividers
+  const rowBounds = [
+    { s: contentTop,        e: hGaps[0].start - 1 },
+    { s: hGaps[0].end + 1,  e: hGaps[1].start - 1 },
+    { s: hGaps[1].end + 1,  e: contentBottom       }
+  ];
+  const colBounds = [
+    { s: contentLeft,       e: vGaps[0].start - 1 },
+    { s: vGaps[0].end + 1,  e: vGaps[1].start - 1 },
+    { s: vGaps[1].end + 1,  e: contentRight        }
+  ];
+
+  // Validate: each cell must be at least 10px in both dimensions
+  for(const r of rowBounds) if(r.e - r.s < 10) return null;
+  for(const c of colBounds) if(c.e - c.s < 10) return null;
+
+  // Extract 9 cells as JPEG dataURLs (row-major: top-left → bottom-right)
+  const slices = [];
+  const sliceCanvas = document.createElement('canvas');
+  const sliceCtx    = sliceCanvas.getContext('2d');
+
+  for(let row = 0; row < 3; row++){
+    for(let col = 0; col < 3; col++){
+      const x  = colBounds[col].s;
+      const y  = rowBounds[row].s;
+      const cw = colBounds[col].e - x + 1;
+      const ch = rowBounds[row].e - y + 1;
+      sliceCanvas.width  = cw;
+      sliceCanvas.height = ch;
+      sliceCtx.clearRect(0, 0, cw, ch);
+      sliceCtx.drawImage(img, x, y, cw, ch, 0, 0, cw, ch);
+      slices.push(sliceCanvas.toDataURL('image/jpeg', 0.95));
+    }
+  }
+
+  return slices;
+}
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),3200);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('modalBg').classList.contains('open'))
+    closeEdit(false);
+});
+
+init();
+</script>
+</body>
+</html>
