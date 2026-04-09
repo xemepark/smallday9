@@ -1620,7 +1620,19 @@ async function exportAll(){
 
   setExpProgress(100,`完成！共 ${blobs.length} 張`);
   overlay.classList.remove('open');
-  openPreview(blobs);
+
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if(isTouchDevice){
+    // Mobile / tablet: show preview for long-press save
+    openPreview(blobs);
+  } else {
+    // Desktop: directly download all 3 consecutively
+    for(const item of blobs){
+      downloadBlob(item.blob, item.filename);
+      await new Promise(r=>setTimeout(r,300));
+    }
+    showToast(`✓ 版本 A、B、C 已全部下載（共 3 張）`);
+  }
 }
 
 function applyColorFilterData(idata,bright,contrast,temp,sat){
