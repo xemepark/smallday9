@@ -329,7 +329,7 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.96);
   z-index:300;flex-direction:column;
-  align-items:center;justify-content:center;gap:0;
+  align-items:stretch;
 }
 .preview-overlay.open{display:flex}
 .preview-topbar{
@@ -341,31 +341,34 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
   font-size:11px;color:var(--c-amber);
   padding:6px 14px;border-radius:20px;
   border:1px solid #f5a62344;background:#f5a62310;
-  text-align:center;flex-shrink:0;margin-bottom:10px;
+  text-align:center;flex-shrink:0;margin:0 16px 10px;
 }
-.preview-img-wrap{
-  flex:1;width:100%;display:flex;align-items:center;justify-content:center;
-  overflow:hidden;padding:0 12px;min-height:0;
+.preview-scroll{
+  flex:1;overflow-y:auto;
+  display:flex;flex-direction:column;gap:20px;
+  padding:0 12px 20px;
+  -webkit-overflow-scrolling:touch;
 }
-.preview-img{
-  max-width:100%;max-height:100%;
-  object-fit:contain;border-radius:6px;
+.preview-item{
+  display:flex;flex-direction:column;gap:8px;
+  align-items:center;
+}
+.preview-item-label{
+  font-size:11px;color:var(--c-muted);letter-spacing:1px;text-transform:uppercase;
+  align-self:flex-start;
+}
+.preview-item img{
+  width:100%;border-radius:8px;
+  display:block;
   /* Enable long-press save on iOS */
   -webkit-touch-callout:default;
   user-select:none;
+  cursor:pointer;
 }
-.preview-actions{
-  display:flex;gap:10px;padding:14px 16px;flex-shrink:0;width:100%;max-width:400px;
+.preview-item-actions{
+  display:flex;gap:8px;width:100%;
 }
-.preview-actions .btn{flex:1;justify-content:center;font-size:13px;padding:10px;}
-.preview-nav{
-  display:flex;gap:8px;padding:0 16px 12px;flex-shrink:0;
-}
-.preview-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:#444;cursor:pointer;transition:background .15s;
-}
-.preview-dot.active{background:var(--c-amber);}
+.preview-item-actions .btn{flex:1;justify-content:center;font-size:12px;}
 
 @media(max-width:900px){
   .versions{grid-template-columns:1fr;overflow-y:auto;}
@@ -591,15 +594,8 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
     <span class="preview-title" id="previewTitle">預覽</span>
     <button class="modal-close" onclick="closePreview()">✕</button>
   </div>
-  <div class="preview-hint" id="previewHint">📱 長按圖片即可儲存到相冊</div>
-  <div class="preview-img-wrap">
-    <img class="preview-img" id="previewImg" alt="預覽圖" draggable="false">
-  </div>
-  <div class="preview-nav" id="previewNav"></div>
-  <div class="preview-actions">
-    <button class="btn" onclick="closePreview()">關閉</button>
-    <button class="btn btn-amber" id="previewDownloadBtn" onclick="downloadCurrent()">↓ 下載到裝置</button>
-  </div>
+  <div class="preview-hint" id="previewHint">📱 長按圖片儲存到相冊，或點下方按鈕下載</div>
+  <div class="preview-scroll" id="previewScroll"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1493,75 +1489,77 @@ function setExpProgress(pct, msg){
 }
 
 // ── Preview overlay ───────────────────────────
-let previewBlobs = []; // [{blob, filename, label}]
-let previewIdx = 0;
+let previewBlobUrls = []; // keep URLs alive for long-press
 
 function openPreview(blobs){
-  previewBlobs = blobs;
-  previewIdx = 0;
-  showPreviewItem(0);
+  // Revoke any previous URLs
+  previewBlobUrls.forEach(u=>URL.revokeObjectURL(u));
+  previewBlobUrls = [];
+
+  const scroll = document.getElementById('previewScroll');
+  scroll.innerHTML = '';
+
+  const isMobile = 'ontouchstart' in window;
+  document.getElementById('previewHint').style.display = isMobile ? '' : 'none';
+
+  // Title
+  document.getElementById('previewTitle').textContent =
+    blobs.length > 1 ? `預覽 · 共 ${blobs.length} 張` : '預覽';
+
+  blobs.forEach((item, i) => {
+    const url = URL.createObjectURL(item.blob);
+    previewBlobUrls.push(url); // keep alive
+
+    const div = document.createElement('div');
+    div.className = 'preview-item';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'preview-item-label';
+    lbl.textContent = item.label;
+
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = item.label;
+    img.draggable = false;
+    // iOS long-press works naturally on <img> with -webkit-touch-callout:default
+
+    const actions = document.createElement('div');
+    actions.className = 'preview-item-actions';
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'btn btn-amber';
+    dlBtn.textContent = `↓ 下載 ${item.label}`;
+    dlBtn.onclick = () => downloadBlob(item.blob, item.filename);
+
+    actions.appendChild(dlBtn);
+
+    if(i === blobs.length - 1){
+      // Last item: add close button too
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'btn';
+      closeBtn.textContent = '關閉';
+      closeBtn.onclick = closePreview;
+      actions.appendChild(closeBtn);
+    }
+
+    div.appendChild(lbl);
+    div.appendChild(img);
+    div.appendChild(actions);
+    scroll.appendChild(div);
+  });
+
   document.getElementById('previewOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // On desktop hide the hint, show only on touch device
-  const hint = document.getElementById('previewHint');
-  hint.style.display = ('ontouchstart' in window) ? '' : 'none';
-  // Nav dots (only if multiple)
-  const nav = document.getElementById('previewNav');
-  nav.innerHTML = '';
-  if(blobs.length > 1){
-    blobs.forEach((_,i)=>{
-      const dot = document.createElement('div');
-      dot.className = 'preview-dot' + (i===0?' active':'');
-      dot.onclick = ()=>showPreviewItem(i);
-      nav.appendChild(dot);
-    });
-  }
-}
-
-function showPreviewItem(i){
-  previewIdx = i;
-  const item = previewBlobs[i];
-  const url = URL.createObjectURL(item.blob);
-  const img = document.getElementById('previewImg');
-  // Revoke previous
-  if(img._prevUrl) URL.revokeObjectURL(img._prevUrl);
-  img._prevUrl = url;
-  img.src = url;
-  document.getElementById('previewTitle').textContent = item.label;
-  // Update dots
-  document.querySelectorAll('.preview-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
-}
-
-function downloadCurrent(){
-  const item = previewBlobs[previewIdx];
-  downloadBlob(item.blob, item.filename);
+  scroll.scrollTop = 0;
 }
 
 function closePreview(){
   document.getElementById('previewOverlay').classList.remove('open');
   document.body.style.overflow = '';
-  // Revoke all blob URLs
-  const img = document.getElementById('previewImg');
-  if(img._prevUrl){ URL.revokeObjectURL(img._prevUrl); img._prevUrl=null; }
-  previewBlobs = [];
+  previewBlobUrls.forEach(u=>URL.revokeObjectURL(u));
+  previewBlobUrls = [];
+  document.getElementById('previewScroll').innerHTML = '';
 }
-
-// Swipe support for mobile preview
-(()=>{
-  let sx=0;
-  const el = ()=>document.getElementById('previewImg');
-  document.addEventListener('touchstart',e=>{
-    if(!document.getElementById('previewOverlay').classList.contains('open')) return;
-    sx=e.touches[0].clientX;
-  },{passive:true});
-  document.addEventListener('touchend',e=>{
-    if(!document.getElementById('previewOverlay').classList.contains('open')) return;
-    const dx=e.changedTouches[0].clientX-sx;
-    if(Math.abs(dx)<50) return;
-    const next = previewIdx + (dx<0?1:-1);
-    if(next>=0&&next<previewBlobs.length) showPreviewItem(next);
-  },{passive:true});
-})();
 
 async function exportVer(vi){
   if(!ST.images.length){ showToast('請先上傳照片'); return; }
