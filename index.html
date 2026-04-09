@@ -1523,6 +1523,11 @@ function openPreview(blobs){
     img.draggable = false;
     // iOS long-press works naturally on <img> with -webkit-touch-callout:default
 
+    // Long-press hint (mobile only)
+    const hint = document.createElement('div');
+    hint.textContent = '📱 長按圖片可直接儲存到相冊';
+    hint.style.cssText = 'font-size:12px;color:#f5a623;text-align:center;padding:4px 0;display:' + (('ontouchstart' in window)?'block':'none');
+
     const actions = document.createElement('div');
     actions.className = 'preview-item-actions';
 
@@ -1544,6 +1549,7 @@ function openPreview(blobs){
 
     div.appendChild(lbl);
     div.appendChild(img);
+    div.appendChild(hint);
     div.appendChild(actions);
     scroll.appendChild(div);
   });
