@@ -1621,17 +1621,18 @@ async function exportAll(){
   setExpProgress(100,`完成！共 ${blobs.length} 張`);
   overlay.classList.remove('open');
 
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  if(isTouchDevice){
-    // Mobile / tablet: show preview for long-press save
-    openPreview(blobs);
-  } else {
-    // Desktop: directly download all 3 consecutively
+  // Use CSS media query to detect true pointer device (mouse = fine, touch = coarse)
+  const hasFinePointer = window.matchMedia('(pointer:fine)').matches;
+  if(hasFinePointer){
+    // Desktop with mouse: directly download all 3
     for(const item of blobs){
       downloadBlob(item.blob, item.filename);
       await new Promise(r=>setTimeout(r,300));
     }
     showToast(`✓ 版本 A、B、C 已全部下載（共 3 張）`);
+  } else {
+    // Mobile / tablet: show preview for long-press save
+    openPreview(blobs);
   }
 }
 
