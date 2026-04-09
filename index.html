@@ -1578,9 +1578,16 @@ async function exportVer(vi){
   const blob = await renderVersionToBlob(vi, setExpProgress);
   overlay.classList.remove('open');
   if(!blob){ showToast('導出失敗'); return; }
-  setExpProgress(100,'完成！');
-  // Show preview overlay
-  openPreview([{ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` }]);
+
+  const hasFinePointer = window.matchMedia('(pointer:fine)').matches;
+  if(hasFinePointer){
+    // Desktop: direct download
+    downloadBlob(blob, getFileName(vi));
+    showToast(`✓ 導出成功 · 版本 ${VER_NAMES[vi]}`);
+  } else {
+    // Mobile/tablet: show preview for long-press save
+    openPreview([{ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` }]);
+  }
 }
 
 // ══════════════════════════════════════════════
