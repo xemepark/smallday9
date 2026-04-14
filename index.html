@@ -37,11 +37,11 @@ input{font-family:inherit}
 
 /* ── Topbar ───────────────────────────────────────── */
 .topbar{
-  display:flex;align-items:center;gap:16px;
-  padding:10px 20px;
+  display:flex;align-items:center;gap:10px;
+  padding:8px 20px;
   background:var(--c-surface);
   border-bottom:1px solid var(--c-border);
-  flex-shrink:0;height:56px;
+  flex-shrink:0;min-height:52px;flex-wrap:wrap;
 }
 .brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .brand-mark{width:28px;height:28px;background:var(--c-amber);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;letter-spacing:-1px}
@@ -83,7 +83,7 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
 .btn-amber:hover{background:#fdb93a;border-color:#fdb93a}
 .btn-red{border-color:#ff444444;color:var(--c-red)}
 .btn-red:hover{background:#1a0000}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 
 /* ── Global color bar ─────────────────────────── */
 .global-bar{
@@ -124,6 +124,7 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
 .sat-trk{background:linear-gradient(to right,#888,#fff 50%,#ff6b6b)!important}
 
 /* ── Upload zone ──────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .upload-area{
   flex:1;display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:12px;
@@ -181,8 +182,7 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
   transition:all .15s;
 }
 .icon-btn:hover{background:var(--c-surface2);color:var(--c-text)}
-.grid-wrap{flex:1;padding:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.photo-grid{
+.grid-wrap{flex:1;padding:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}.photo-grid{
   display:grid;grid-template-columns:repeat(3,1fr);
   width:100%;aspect-ratio:1;
 }
@@ -392,6 +392,89 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
   .edit-side{width:100%;border-left:none;border-top:1px solid var(--c-border);max-height:45vh;overflow-y:auto;}
   .edit-vp{min-height:220px;}
 }
+
+/* ── Bleed line overlay (pure CSS ::before/::after) ── */
+.grid-wrap{flex:1;padding:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+
+/* photo-grid: position:relative required for pseudo-elements */
+.photo-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  width:100%;aspect-ratio:1;position:relative;
+}
+
+/* Default: invisible pseudo-elements */
+.photo-grid::before,
+.photo-grid::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* ::before = dashed red frame inset 1.7% */
+.photo-grid::before{
+  top:1.7%;left:1.7%;right:1.7%;bottom:1.7%;
+  border:2px dashed transparent;
+  z-index:20;
+  transition:border-color .2s;
+}
+
+/* ::after = 4-edge red gradient masks */
+.photo-grid::after{
+  inset:0;
+  background:
+    linear-gradient(to bottom, rgba(224,82,82,0)    1.7%, transparent 1.7%),
+    linear-gradient(to top,    rgba(224,82,82,0)    1.7%, transparent 1.7%),
+    linear-gradient(to right,  rgba(224,82,82,0)    1.7%, transparent 1.7%),
+    linear-gradient(to left,   rgba(224,82,82,0)    1.7%, transparent 1.7%);
+  z-index:19;
+  transition:background .2s;
+}
+
+/* ON state */
+.photo-grid.bleed-on::before{
+  border-color:rgba(224,82,82,0.9);
+}
+.photo-grid.bleed-on::after{
+  background:
+    linear-gradient(to bottom, rgba(224,82,82,0.28) 1.7%, transparent 1.7%),
+    linear-gradient(to top,    rgba(224,82,82,0.28) 1.7%, transparent 1.7%),
+    linear-gradient(to right,  rgba(224,82,82,0.28) 1.7%, transparent 1.7%),
+    linear-gradient(to left,   rgba(224,82,82,0.28) 1.7%, transparent 1.7%);
+}
+
+/* Bleed info bar */
+.bleed-info-bar{
+  display:none;align-items:center;gap:8px;
+  padding:4px 20px;background:#0d0d0d;
+  border-top:1px solid #1a1a1a;font-size:10px;color:#666;flex-shrink:0;
+}
+.bleed-info-bar.show{display:flex}
+
+/* ── Export dialogs ───────────────────────────── */
+.xdlg-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:500;align-items:center;justify-content:center;padding:20px;
+}
+.xdlg-bg.open{display:flex}
+.xdlg{
+  background:#1a1a1a;border:1px solid #2e2e2e;border-radius:14px;
+  width:min(96vw,420px);overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.9);
+}
+.xdlg-head{padding:18px 20px 14px;border-bottom:1px solid #222}
+.xdlg-title{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.xdlg-sub{font-size:10px;color:#555;margin-top:4px}
+.xdlg-body{padding:14px 20px;display:flex;flex-direction:column;gap:8px}
+.xopt-files{
+  margin-top:6px;padding:9px 11px;
+  background:#0d0d0d;border:1px solid #1e1e1e;border-radius:7px;
+  font-size:9px;font-family:monospace;line-height:2;
+}
+.fc{color:#e05252}.fb{color:#4a9eff}.fg{color:#3ecf8e}
+.xdlg-foot{padding:10px 20px 16px;display:flex;gap:8px;border-top:1px solid #222}
+.xdlg-foot .btn{flex:1;justify-content:center;padding:8px}
+.xdlg-foot .btn-cancel{flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -421,16 +504,19 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
       <span class="ctrl-lbl">底色</span>
       <input type="color" id="bgColor" value="#ffffff" onchange="updateBg(this.value)">
     </div>
-    <button class="btn" onclick="randomAll()">⟳ 全部版本換位</button>
   </div>
   <div class="topbar-right">
-    <button class="btn" onclick="triggerImportGrid()" style="border-color:#a78bfa66;color:#a78bfa;" title="上傳一張已排好的九宮格圖，自動切割成9張並載入">⬆ 匯入九宮格圖</button>
-    <input type="file" id="importGridInput" accept="image/*" style="display:none" onchange="handleImportGrid(this.files)">
-    <button class="btn" onclick="triggerTemplate()" style="border-color:#34d39966;color:#34d399;" title="合成九宮格至版型圖並下載">🖼 套用版型導出</button>
     <button class="btn btn-amber" onclick="triggerUpload()">＋ 上傳照片</button>
+    <button class="btn" onclick="triggerImportGrid()" style="border-color:#a78bfa66;color:#a78bfa;">⬆ 匯入九宮格</button>
     <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
+    <input type="file" id="importGridInput" accept="image/*" style="display:none" onchange="handleImportGrid(this.files)">
     <input type="file" id="replaceInput" accept="image/*" style="display:none" onchange="handleReplaceFile(this.files)">
-    <button class="btn" onclick="exportAll()" style="border-color:#f5a62366;color:var(--c-amber)">↓ 導出全部 A·B·C</button>
+    <div class="topbar-sep"></div>
+    <button class="btn" onclick="randomAll()">⟳ 全版換位</button>
+    <button class="btn" id="bleedToggleBtn" onclick="toggleBleed()" style="border-color:#e0525244;color:#e05252;">⊡ 出血線</button>
+    <div class="topbar-sep"></div>
+    <button class="btn" onclick="openExportAllDialog()" style="border-color:#f5a62366;color:var(--c-amber);font-weight:600;">📦 全部導出</button>
+    <div class="topbar-sep"></div>
     <button class="btn btn-red" onclick="clearAll()">✕ 清除</button>
   </div>
 </div>
@@ -462,6 +548,62 @@ input[type=color]{width:28px;height:24px;border:1px solid var(--c-border2);borde
     <span class="gc-val" id="gvSat">0</span>
   </div>
   <button class="gc-reset" onclick="resetGlobalColor()">↺ 重設</button>
+</div>
+
+
+<!-- ── Bleed info bar ──────────────────────────── -->
+<div class="bleed-info-bar" id="bleedInfoBar">
+  <span style="color:#e05252">●</span>
+  <span style="color:#e05252;font-weight:500">出血線顯示中</span>
+  <span>·</span>
+  <span>紅色遮罩範圍（四邊各 1.7%）印刷時將被裁切，重要內容請置於虛線內</span>
+</div>
+
+<!-- ── Single version export dialog ──────────────── -->
+<div class="xdlg-bg" id="xdlgVer" onclick="if(event.target===this)closeExportVerDialog()">
+  <div class="xdlg">
+    <div class="xdlg-head">
+      <div class="xdlg-title">
+        <span id="xdlgVerBadge" class="ver-badge ba">版本 A</span>
+        <span>單版導出</span>
+      </div>
+      <div class="xdlg-sub">版本 <span id="xdlgVerName">A</span> × 3 種格式，共 <strong style="color:var(--c-amber)">3 張</strong>，打包成一個 ZIP 下載</div>
+    </div>
+    <div class="xdlg-body">
+      <div class="xopt-files" id="xvFileList"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:#555;padding:2px 0">
+        <span><span class="fc">■</span> 有裁切線</span>
+        <span><span class="fb">■</span> 無裁切線</span>
+        <span><span class="fg">■</span> 無框畫套版</span>
+      </div>
+    </div>
+    <div class="xdlg-foot">
+      <button class="btn btn-cancel" onclick="closeExportVerDialog()">取消</button>
+      <button class="btn btn-amber" onclick="doExportVer()">⬇ 打包下載 ZIP</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Export all dialog ───────────────────────── -->
+<div class="xdlg-bg" id="xdlgAll" onclick="if(event.target===this)closeExportAllDialog()">
+  <div class="xdlg">
+    <div class="xdlg-head">
+      <div class="xdlg-title">📦 全部導出</div>
+      <div class="xdlg-sub">A、B、C 三版本 × 3 種格式，共 <strong style="color:var(--c-amber)">9 張</strong>，打包成一個 ZIP 下載</div>
+    </div>
+    <div class="xdlg-body">
+      <div class="xopt-files" id="xaFileList"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:#555;padding:2px 0">
+        <span><span class="fc">■</span> 有裁切線</span>
+        <span><span class="fb">■</span> 無裁切線</span>
+        <span><span class="fg">■</span> 無框畫套版</span>
+      </div>
+    </div>
+    <div class="xdlg-foot">
+      <button class="btn btn-cancel" onclick="closeExportAllDialog()">取消</button>
+      <button class="btn btn-amber" onclick="doExportAll()">⬇ 打包下載 ZIP</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── Mobile Version Tabs (hidden on desktop) ──── -->
@@ -794,7 +936,7 @@ function buildPanel(vi){
         <button onclick="randomVer(${vi})" title="此版本隨機換位（不影響其他版本）"
           style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px solid #f5a62388;background:#f5a62318;color:#f5a623;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:0.3px;"
           onmouseover="this.style.background='#f5a62333'" onmouseout="this.style.background='#f5a62318'">⟳ 換位</button>
-        <button class="icon-btn" title="導出" onclick="exportVer(${vi})">↓</button>
+        <button class="icon-btn" title="單版導出" onclick="openExportVerDialog(${vi})">↓</button>
       </div>
     </div>
     <div class="grid-wrap">
@@ -803,7 +945,7 @@ function buildPanel(vi){
       </div>
     </div>
     <div class="ver-foot">
-      <button class="btn btn-amber" onclick="exportVer(${vi})">導出 3600px JPG</button>
+      <button class="btn btn-amber" onclick="openExportVerDialog(${vi})">↓ 單版導出</button>
     </div>`;
   setTimeout(()=>buildGrid(vi),0);
   return p;
@@ -875,6 +1017,8 @@ function buildGrid(vi){
     setupCellDrag(cell,vi,ci);
     grid.appendChild(cell);
   }
+  // Re-apply bleed class if bleed is currently ON
+  if(bleedVisible) grid.classList.add('bleed-on');
 }
 
 function mkCBtn(txt,title,fn){
@@ -1588,80 +1732,186 @@ function closePreview(){
   document.getElementById('previewScroll').innerHTML = '';
 }
 
-async function exportVer(vi){
-  if(!ST.images.length){ showToast('請先上傳照片'); return; }
-  const overlay = document.getElementById('expOverlay');
-  document.getElementById('expTitle').textContent = `導出版本 ${VER_NAMES[vi]} · 3600×3600px`;
-  overlay.classList.add('open');
-  setExpProgress(0,'準備中...');
-  await new Promise(r=>setTimeout(r,40));
-  const blob = await renderVersionToBlob(vi, setExpProgress);
-  overlay.classList.remove('open');
-  if(!blob){ showToast('導出失敗'); return; }
-
-  const hasFinePointer = window.matchMedia('(pointer:fine)').matches;
-  if(hasFinePointer){
-    // Desktop: direct download
-    downloadBlob(blob, getFileName(vi));
-    showToast(`✓ 導出成功 · 版本 ${VER_NAMES[vi]}`);
+// ══════════════════════════════════════════════
+// Bleed line toggle
+// ══════════════════════════════════════════════
+let bleedVisible = false;
+function toggleBleed(){
+  bleedVisible = !bleedVisible;
+  const btn = document.getElementById('bleedToggleBtn');
+  if(bleedVisible){
+    btn.style.background='#e05252'; btn.style.borderColor='#e05252'; btn.style.color='#fff';
+    btn.textContent='⊡ 出血線 ON';
   } else {
-    // Mobile/tablet: show preview for long-press save
-    openPreview([{ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` }]);
+    btn.style.background=''; btn.style.borderColor='#e0525244'; btn.style.color='#e05252';
+    btn.textContent='⊡ 出血線';
   }
+  document.getElementById('bleedInfoBar').classList.toggle('show', bleedVisible);
+  document.querySelectorAll('.photo-grid').forEach(g=>g.classList.toggle('bleed-on', bleedVisible));
+}
+
+// Draw bleed line burned into export canvas
+function drawBleedOnCanvas(ctx, SIZE){
+  const bp = Math.round(SIZE * 0.017);
+  ctx.save();
+  ctx.fillStyle='rgba(224,82,82,0.35)';
+  ctx.fillRect(0,0,SIZE,bp); ctx.fillRect(0,SIZE-bp,SIZE,bp);
+  ctx.fillRect(0,0,bp,SIZE); ctx.fillRect(SIZE-bp,0,bp,SIZE);
+  ctx.strokeStyle='rgba(224,82,82,0.9)';
+  ctx.lineWidth=Math.max(3,SIZE*0.001);
+  ctx.setLineDash([Math.round(SIZE*0.015),Math.round(SIZE*0.007)]);
+  ctx.strokeRect(bp,bp,SIZE-bp*2,SIZE-bp*2);
+  const cs=Math.round(SIZE*0.025), lw=Math.max(4,SIZE*0.0015);
+  ctx.setLineDash([]); ctx.lineWidth=lw; ctx.strokeStyle='#e05252';
+  [[bp,bp,1,1],[SIZE-bp,bp,-1,1],[bp,SIZE-bp,1,-1],[SIZE-bp,SIZE-bp,-1,-1]].forEach(([x,y,dx,dy])=>{
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+dx*cs,y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+dy*cs); ctx.stroke();
+  });
+  ctx.restore();
+}
+
+// Render version with bleed burned on top
+async function renderVersionWithBleed(vi, onProgress){
+  const blob = await renderVersionToBlob(vi, onProgress);
+  const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(blob); });
+  const cv=document.createElement('canvas'); cv.width=cv.height=EXPORT_SIZE;
+  const ctx=cv.getContext('2d');
+  ctx.drawImage(img,0,0); URL.revokeObjectURL(img.src);
+  drawBleedOnCanvas(ctx,EXPORT_SIZE);
+  return new Promise(res=>cv.toBlob(res,'image/jpeg',0.95));
 }
 
 // ══════════════════════════════════════════════
-// Export all three versions
+// File name helpers
 // ══════════════════════════════════════════════
-async function exportAll(){
+let _cachedBaseName = null;
+function getBaseName(){
+  if(_cachedBaseName) return _cachedBaseName;
+  const n=ST.clientName.trim()||'Smallday';
+  const now=new Date(), p=x=>String(x).padStart(2,'0');
+  _cachedBaseName=`${n}-${now.getFullYear()}${p(now.getMonth()+1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+  return _cachedBaseName;
+}
+function clearBaseName(){ _cachedBaseName=null; }
+function fname(ver,type){
+  const b=getBaseName();
+  if(type==='bleed') return `${b}-裁切線-${ver}.jpg`;
+  if(type==='clean') return `${b}-${ver}.jpg`;
+  if(type==='tmpl')  return `${b}-無框畫-${ver}.jpg`;
+  return `${b}-${ver}.jpg`;
+}
+
+// Build file list HTML for dialog preview
+function buildFileListHTML(vers){
+  const b=getBaseName();
+  const folderName = vers.length>1 ? b : `${b}-${vers[0]}`;
+  let html=`<span style="color:#aaa;display:block;margin-bottom:3px">📦 ${folderName}.zip</span>`;
+  html+=`<span style="color:#f5a623;display:block;padding-left:8px;margin-bottom:2px">📁 ${folderName}/</span>`;
+  vers.forEach(v=>{
+    if(vers.length>1) html+=`<span style="color:#666;font-size:8px;padding-left:20px;display:block;margin-top:4px">— 版本 ${v} —</span>`;
+    html+=`<span style="color:#e05252;padding-left:20px;display:block">${fname(v,'bleed')}</span>`;
+    html+=`<span style="color:#4a9eff;padding-left:20px;display:block">${fname(v,'clean')}</span>`;
+    html+=`<span style="color:#3ecf8e;padding-left:20px;display:block">${fname(v,'tmpl')}</span>`;
+  });
+  const total=vers.length*3;
+  html+=`<span style="color:#555;font-size:8px;padding-left:8px;display:block;border-top:1px solid #1e1e1e;margin-top:6px;padding-top:4px">共 ${total} 張 · 一個資料夾 · 一個 ZIP</span>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════
+// Single version export dialog
+// ══════════════════════════════════════════════
+let xdlgVerVi = 0;
+
+function openExportVerDialog(vi){
   if(!ST.images.length){ showToast('請先上傳照片'); return; }
-  const overlay = document.getElementById('expOverlay');
-  document.getElementById('expTitle').textContent = '導出全部版本 A · B · C · 3600×3600px';
-  overlay.classList.add('open');
-  setExpProgress(0,'準備導出三個版本...');
+  clearBaseName();
+  xdlgVerVi = vi;
+  const badge = document.getElementById('xdlgVerBadge');
+  badge.className=`ver-badge ${VER_BADGES[vi]}`; badge.textContent=`版本 ${VER_NAMES[vi]}`;
+  document.getElementById('xdlgVerName').textContent = VER_NAMES[vi];
+  document.getElementById('xvFileList').innerHTML = buildFileListHTML([VER_NAMES[vi]]);
+  document.getElementById('xdlgVer').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeExportVerDialog(){
+  document.getElementById('xdlgVer').classList.remove('open');
+  document.body.style.overflow='';
+}
+async function doExportVer(){
+  closeExportVerDialog();
+  const vi=xdlgVerVi, V=VER_NAMES[vi], b=getBaseName();
+  const folderName=`${b}-${V}`;
+  await runZipExport(`版本 ${V} 打包中...`, [vi], folderName);
+}
+
+// ══════════════════════════════════════════════
+// Export all dialog
+// ══════════════════════════════════════════════
+function openExportAllDialog(){
+  if(!ST.images.length){ showToast('請先上傳照片'); return; }
+  clearBaseName();
+  document.getElementById('xaFileList').innerHTML = buildFileListHTML(VER_NAMES);
+  document.getElementById('xdlgAll').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeExportAllDialog(){
+  document.getElementById('xdlgAll').classList.remove('open');
+  document.body.style.overflow='';
+}
+async function doExportAll(){
+  closeExportAllDialog();
+  const b=getBaseName();
+  await runZipExport('全部打包中...', [0,1,2], b);
+}
+
+// ══════════════════════════════════════════════
+// Core ZIP export engine
+// ══════════════════════════════════════════════
+async function runZipExport(title, viList, folderName){
+  const overlay=document.getElementById('expOverlay');
+  document.getElementById('expTitle').textContent=title;
+  overlay.classList.add('open'); setExpProgress(0,'載入打包工具...');
   await new Promise(r=>setTimeout(r,40));
 
-  const blobs = [];
-  for(let vi=0; vi<VER_NAMES.length; vi++){
-    const baseProgress = Math.round(vi/3*100);
-    setExpProgress(baseProgress, `正在渲染版本 ${VER_NAMES[vi]}...`);
-    await new Promise(r=>setTimeout(r,60)); // let UI breathe on mobile
-
-    let blob = null;
-    try {
-      blob = await renderVersionToBlob(vi, (pct, msg)=>{
-        setExpProgress(Math.round(baseProgress + pct/3), msg);
-      });
-    } catch(e) {
-      console.error('Export error vi='+vi, e);
-    }
-
-    if(!blob){
-      overlay.classList.remove('open');
-      showToast(`版本 ${VER_NAMES[vi]} 渲染失敗，請試試「逐版本導出」`);
-      return;
-    }
-    blobs.push({ blob, filename: getFileName(vi), label: `版本 ${VER_NAMES[vi]}` });
-    // Give mobile GC time between large canvas operations
-    await new Promise(r=>setTimeout(r,300));
+  // Load JSZip dynamically
+  if(!window.JSZip){
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload=res; s.onerror=rej; document.head.appendChild(s);
+    });
   }
 
-  setExpProgress(100,`完成！共 ${blobs.length} 張`);
+  const zip=new window.JSZip();
+  const folder=zip.folder(folderName);
+  const totalSteps=viList.length*3;
+  let done=0;
+
+  for(const vi of viList){
+    const V=VER_NAMES[vi];
+    // 1. Clean
+    setExpProgress(Math.round(done/totalSteps*90),`版本 ${V} · 無裁切線`);
+    const cleanBlob=await renderVersionToBlob(vi);
+    folder.file(fname(V,'clean'), cleanBlob); done++;
+    // 2. Bleed
+    setExpProgress(Math.round(done/totalSteps*90),`版本 ${V} · 有裁切線`);
+    const bleedBlob=await renderVersionWithBleed(vi);
+    folder.file(fname(V,'bleed'), bleedBlob); done++;
+    // 3. Template
+    setExpProgress(Math.round(done/totalSteps*90),`版本 ${V} · 無框畫`);
+    const tmplBlob=await renderVersionWithTemplate(vi);
+    folder.file(fname(V,'tmpl'), tmplBlob); done++;
+    await new Promise(r=>setTimeout(r,80));
+  }
+
+  setExpProgress(95,'壓縮打包中...');
+  await new Promise(r=>setTimeout(r,20));
+  const zipBlob=await zip.generateAsync({type:'blob',compression:'STORE'});
+  setExpProgress(100,'完成！');
   overlay.classList.remove('open');
-
-  // Use CSS media query to detect true pointer device (mouse = fine, touch = coarse)
-  const hasFinePointer = window.matchMedia('(pointer:fine)').matches;
-  if(hasFinePointer){
-    // Desktop with mouse: directly download all 3
-    for(const item of blobs){
-      downloadBlob(item.blob, item.filename);
-      await new Promise(r=>setTimeout(r,300));
-    }
-    showToast(`✓ 版本 A、B、C 已全部下載（共 3 張）`);
-  } else {
-    // Mobile / tablet: show preview for long-press save
-    openPreview(blobs);
-  }
+  downloadBlob(zipBlob, folderName+'.zip');
+  showToast(`✓ ${folderName}.zip 已下載`);
 }
 
 function applyColorFilterData(idata,bright,contrast,temp,sat){
