@@ -829,7 +829,7 @@ function updateGap(v){
   document.getElementById('gapVal').textContent=v+'px';
   VER_NAMES.forEach((_,vi)=>{
     const g=document.getElementById('grid-'+vi);
-    if(g){g.style.gap=v+'px';g.style.padding=v+'px';}
+    if(g){g.style.gap=v+'px';g.style.padding='0';}
   });
   stateSave();
 }
@@ -941,7 +941,7 @@ function buildPanel(vi){
     </div>
     <div class="grid-wrap">
       <div class="photo-grid" id="grid-${vi}"
-        style="gap:${ST.gap}px;padding:${ST.gap}px;background:${ST.bgColor};">
+        style="gap:${ST.gap}px;padding:0;background:${ST.bgColor};">
       </div>
     </div>
     <div class="ver-foot">
@@ -1581,8 +1581,8 @@ function handleReplaceFile(files){
 // ══════════════════════════════════════════════
 async function renderVersionToBlob(vi, onProgress){
   const SIZE = EXPORT_SIZE;
-  const gp = Math.round((ST.gap / 300) * SIZE);
-  const cp = Math.round((SIZE - gp * 4) / 3);
+  const gp = Math.round((ST.gap / 300) * SIZE); // gap between cells only
+  const cp = Math.round((SIZE - gp * 2) / 3);    // cell size: no outer padding
   const cv = document.createElement('canvas');
   cv.width = cv.height = SIZE;
   const ctx = cv.getContext('2d');
@@ -1599,7 +1599,7 @@ async function renderVersionToBlob(vi, onProgress){
     const idx = ver.order[ci];
     if(idx===undefined||!ST.images[idx]) continue;
     const col=ci%3, row=Math.floor(ci/3);
-    const x=gp+col*(cp+gp), y=gp+row*(cp+gp);
+    const x=col*(cp+gp), y=row*(cp+gp); // no outer offset
     let img; try{ img=await loadImg(ST.images[idx]); }catch{ continue; }
     const tr = ST.transforms[vi][ci];
     ctx.save();
